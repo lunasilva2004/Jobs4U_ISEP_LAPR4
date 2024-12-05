@@ -1,0 +1,47 @@
+@startuml
+
+title Sequence Diagram - Notify by Email
+title <size:20>Sequence Diagram - 1016</size>
+
+'http://plantuml.com/skinparam.html
+skinparam monochrome false
+skinparam packageStyle rect
+skinparam defaultFontName FG Virgil
+skinparam shadowing false
+
+actor CustomerManager as Actor #lightblue
+participant ":NotifyByEmailUI" as UI <<presentation>>
+participant ":NotifyByEmailController" as Controller <<application>>
+participant ":JobApplicationRepository" as JobApplicationRepository <<repository>>
+participant ":EmailService" as EmailService <<service>>
+
+activate Actor
+Actor -> UI: Notify Candidates About Application State by Email
+
+activate UI
+    UI -> Controller**: create()
+
+    activate Controller
+
+    UI -> Controller: findVerifiedApplications()
+        Controller -> JobApplicationRepository: findVerifiedApplications(List.of(State.CONFIRMED, State.REJECTED))
+        activate JobApplicationRepository
+        JobApplicationRepository-->Controller: jobApplications
+        Controller-->UI: jobApplications
+        UI-->Actor: Asks if wants to notify the candidates
+        Actor->UI: Responds
+        alt response is "yes"
+            UI -> Controller: notifyCandidates()
+            Controller -> EmailService: sendEmailMessage(String to, String subject, String msg)
+            activate EmailService
+
+            EmailService --> Controller: isSent
+            Controller --> UI : Candidates notified
+            UI --> Actor: Candidates notified
+        else response is "no"
+            UI --> Actor: "Notification cancelled."
+        end
+
+    deactivate UI
+    deactivate Actor
+@enduml

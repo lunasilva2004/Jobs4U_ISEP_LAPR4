@@ -1,0 +1,11 @@
+------------------------------
+    T E S T    P L A N
+------------------------------
+
+To test this US, the following steps will be taken:
+
+    - Do login as Customer Manager
+    - Choose option to Register a Job Opening
+    - Fill the form with the required data
+    - Check the returned information by UI (Success/In-success message)
+    - OPTIONAL: Choose option to List Job Openings and verify if the new job opening is listed

@@ -1,0 +1,46 @@
+@startuml
+
+       title <size:20> Sequence Diagram US 1008 - Interview Model </size>
+
+       skinparam monochrome false
+       skinparam packageStyle rect
+       skinparam defaultFontName FG Virgil
+       skinparam shadowing false
+
+       actor LanguageEngineer as Actor #lightblue
+       participant ":RegisterPluginUI" as UI <<presentation>>
+       participant ":InterviewController" as Controller <<application>>
+       participant "interviewModel:InterviewModel" as interviewModel <<domain>>
+       participant ":InterviewRepo" as repo <<repository>>
+
+       activate Actor
+       Actor -> UI: Asks to deploy and configure \na plugin for the interview model
+
+            activate UI
+            UI -> Controller **: create
+            UI --> Actor: Requests the name, description \nand className to register the plugin
+            Actor -> UI: Provide the name, description \nand className for the plugin
+            UI -> Controller: registerInterviewModel(name, \ndescription, className)
+
+                activate Controller
+                Controller -> interviewModel **: create
+                Controller -> interviewModel: withName(name)
+                Controller -> interviewModel: withDescription(description)
+                Controller -> interviewModel: withClassName(className)
+                Controller -> interviewModel: registerInterviewModel(name, \ndescription, className)
+                interviewModel --> Controller: interviewModel
+                Controller -> repo: save()
+
+                    activate repo
+                    repo --> Controller: interviewModel
+                    deactivate repo
+
+                Controller --> UI: interviewModel
+                deactivate Controller
+
+            UI --> Actor: displayOperationSuccess
+            deactivate UI
+
+       deactivate Actor
+
+@enduml

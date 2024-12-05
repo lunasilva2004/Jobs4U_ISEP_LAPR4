@@ -1,0 +1,79 @@
+@startuml
+
+title <size:20>Sequence Diagram US 1017 - False Version</size>
+
+skinparam monochrome false
+skinparam packageStyle rect
+skinparam defaultFontName FG Virgil
+skinparam shadowing false
+
+actor CustomerManager as Actor #lightblue
+participant ":UploadInterviewModelFileUI" as UI <<presentation>>
+participant ":UploadFileController" as Controller <<application>>
+participant ":JobOpeningRepository" as JobOpeningRepo <<repository>>
+participant ":JobApplicationRepository" as JobApplicationRepo <<repository>>
+participant ":InterviewModel_EX1" as IM <<domain>>
+
+activate Actor
+Actor -> UI : Asks to upload a text file with the \ncandidate's answers (Interview)
+
+    activate UI
+    UI -> Controller**: create
+    UI -> Controller: getAllInterviewsJobOpenings()
+
+        activate Controller
+        Controller -> JobOpeningRepo: findJobOpeningsByPhase(PhaseType.INTERVIEWS)
+
+            activate JobOpeningRepo
+            JobOpeningRepo --> Controller:  List<JobOpening>
+            deactivate JobOpeningRepo
+
+        Controller --> UI: jobOpeningList
+        deactivate Controller
+
+    UI --> Actor: Asks to select the Job Opening
+    deactivate UI
+
+Actor -> UI: Selects the Job Opening
+
+    activate UI
+    UI -> Controller: getJobApplicationsByJobReference(selectedJobOpening.toDTO().getJobReference())
+
+        activate Controller
+        Controller -> JobApplicationRepo: findByJobReference(jobReference)
+
+            activate JobApplicationRepo
+            JobApplicationRepo --> Controller:  List<JobApplication>
+            deactivate JobApplicationRepo
+
+        Controller --> UI: jobApplicationsList
+        deactivate Controller
+
+    UI --> Actor: Asks to select a Job Application
+    deactivate UI
+
+Actor -> UI: Selects the Job Application
+
+    activate UI
+    UI --> Actor: Asks for the path of the file
+    deactivate UI
+
+Actor -> UI: Provides the path of the file
+
+    activate UI
+    UI -> Controller: verifyInterviewSyntax(filePath)
+
+        activate Controller
+        Controller ->IM: isFileSyntaxCorrect(filePath)
+
+            activate IM
+            IM --> Controller: false
+            deactivate IM
+
+        Controller --> UI: File Syntax is incorrect
+        deactivate Controller
+
+    UI --> Actor: Displays Error Message
+    deactivate UI
+
+@enduml

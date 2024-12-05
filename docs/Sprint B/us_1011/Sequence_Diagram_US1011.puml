@@ -1,0 +1,76 @@
+@startuml
+
+title <size:20>Sequence Diagram US 1011</size>
+
+skinparam monochrome false
+skinparam packageStyle rect
+skinparam defaultFontName FG Virgil
+skinparam shadowing false
+
+actor LanguageEngineer as Actor #lightblue
+participant ":SelectInterviewModelUI" as UI <<presentation>>
+participant ":SelectInterviewModelController" as Controller <<application>>
+participant "interview:Interview" as Domain <<domain>>
+participant ":InterviewModelRepository" as IMRepository <<repository>>
+participant ":InterviewRepositoru" as IRepository <<repository>>
+
+activate Actor
+
+    Actor -> UI: Asks to select an Interview Model\nto be used for an Interview
+    activate UI
+
+        UI--> Actor: Asks for the Interview's ID
+        Actor -> UI: Provides the Interview's ID
+        UI -> Controller: findInterviewByID(Long id)
+        activate Controller
+
+            Controller -> IMRepository: findByID(id)
+            activate IMRepository
+
+                IMRepository --> Controller: interview
+
+            deactivate IMRepository
+
+            Controller --> UI: interview
+
+        deactivate Controller
+
+        UI --> Actor: Asks for Interview Model Specification name
+        Actor -> UI: Provides Interview Model Specification name
+        UI -> Controller: findInterviewModelByName(String name)
+        activate Controller
+
+            Controller -> IRepository: findByName(String name)
+            activate IRepository
+
+                IRepository --> Controller: interviewModel
+
+            deactivate IRepository
+
+            Controller --> UI: interviewModel
+            UI -> Controller: associateInterviewModelToInterview(String interviewName, Long id)
+            Controller -> Domain: updateInterviewModel(plugin)
+            activate Domain
+
+                Domain --> Controller: interview
+
+            deactivate Domain
+
+            Controller -> IRepository: save(interview)
+            activate IRepository
+
+                IRepository --> Controller: interview
+
+            deactivate IRepository
+
+            Controller --> UI: interview
+
+        deactivate Controller
+
+        UI --> Actor: Displays Operation Success Message
+
+    deactivate UI
+
+deactivate Actor
+
+@enduml

@@ -1,0 +1,63 @@
+@startuml
+title Connection Diagram (CandidateApp)_US3001
+
+actor Candidate as actor
+box "CandidateApp" #LightGreen
+participant ":CandidateApp" as app
+end box
+
+box Core #lightblue
+participant ":CommunicationController" as com <<application>>
+participant ":CommunicationService" as service <<service>>
+participant ":Messenger" as messenger
+participant ":Translator" as translator
+end box
+
+participant "FollowUpServer" as server #orange
+
+activate actor
+actor -> app : Asks to set the communication
+activate app
+app -> com : initializeCommunication(socket)
+activate com
+com -> service : initializeCommunication(socket)
+activate service
+service -> messenger **: create()
+deactivate service
+deactivate com
+app -> com : testConnection()
+activate com
+com -> service : testConnection()
+activate service
+service -> translator: encode(1, MessageCode.COMMTEST, null, null)
+activate translator
+translator --> service : byte[] message
+deactivate translator
+service -> messenger: sendMessage(message)
+activate messenger
+messenger -> server
+activate server
+server -> messenger
+deactivate server
+service -> messenger: receiveMessage()
+messenger --> service: byte[] receiveMessage
+deactivate messenger
+service -> translator: decodeCode(response)
+activate translator
+translator --> service: MessageCode
+deactivate translator
+service --> com: MessageCode
+deactivate service
+com --> app: MessageCode
+deactivate com
+
+alt MessageCode.ACK
+app --> actor: Connection established
+else MessageCode.ERR
+app --> actor: Connection refused
+end
+
+
+
+
+@enduml

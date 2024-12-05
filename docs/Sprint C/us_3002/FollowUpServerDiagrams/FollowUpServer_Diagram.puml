@@ -1,0 +1,132 @@
+@startuml
+title FollowUpServer Diagram_US3002
+
+
+box "FollowUpServer" #lightgreen
+participant ":RcompServer" as Rcomp
+participant ":Server" as server
+participant ":SemaphoreForServer" as semaphore
+participant ":Thread" as thread
+participant ":SimpleHandler" as simple
+participant ":Handler" as handler
+end box
+
+participant "CustomerApp"  as Capp #orange
+
+
+box "Core" #lightblue
+participant ":Translator" as translator
+participant ":Email" as email <<value object>>
+participant ":CandidateRepository" as candidate <<repository>>
+participant ":ListJobOpeningController" as jobOpening <<application>>
+participant ":ListJobOpeningService" as jobOpeningService <<service>>
+participant ":JobOpening" as O <<entity>>
+participant ":JobOpeningDTO" as DTO <<dto>>
+participant ":CustomerRepository" as customer <<repository>>
+end box
+
+activate Rcomp
+Rcomp -> server**: new Server(PORT)
+activate server
+server -> semaphore: instance().activateCriticalSection()
+activate semaphore
+
+alt true
+semaphore --> server: true
+server -> thread** : new Thread(serverThreadGroup, new SimpleHandler(serverSocketConnection))
+& thread-> simple**: new SimpleHandler(serverSocketConnection)
+
+loop while connected
+Capp --> simple: byte[] message
+activate Capp
+activate simple
+simple -> translator: decodeCode(message)
+activate translator
+
+alt 0
+simple -> simple: sendACK()
+else 1
+simple -> simple: connected = false
+else 4
+simple -> simple: authenticate(message)
+
+alt true
+simple --> simple: true
+simple -> translator: decodeData1(message)
+translator --> simple: userEmail
+deactivate translator
+simple -> email**: new Email(userEmail)
+simple -> candidate: findByEmail(email)
+
+alt isPresent
+simple -> email: get()
+end
+
+simple -> customer: findByEmail(email)
+
+alt isPresent
+simple -> email: get()
+end
+simple -> simple: sendACK()
+
+else false
+simple --> simple: false
+simple -> simple: sendERR()
+end
+
+else 7
+simple -> jobOpening**: create()
+activate jobOpening
+simple -> jobOpening: listJobOpeningsForCustomer()
+jobOpening -> jobOpeningService**: create()
+activate jobOpeningService
+jobOpening -> jobOpeningService: listJobOpeningsForCustomer(email)
+jobOpeningService -> customer: findByCustomerEmail(email.toString())
+activate customer
+customer --> jobOpeningService: customer
+jobOpeningService -> jobOpeningService: addJobOpeningDetails(customerJobOpenings)
+
+loop for each opening
+jobOpeningService -> O : toDTO()
+activate O
+O --> jobOpeningService: JobOpeningDTO
+deactivate O
+jobOpeningService -> DTO: getJobReference()
+activate DTO
+DTO --> jobOpeningService: jobReference
+deactivate DTO
+jobOpeningService -> DTO: getFunction()
+activate DTO
+DTO --> jobOpeningService: function
+deactivate DTO
+jobOpeningService -> DTO: getStartDate()
+activate DTO
+DTO --> jobOpeningService: startDate
+deactivate DTO
+jobOpeningService -> customer: countApplicationsByJobReference(jobRference)
+customer --> jobOpeningService: numberOfApplicants
+deactivate customer
+end
+
+jobOpeningService --> jobOpening: customerJobOpening list
+deactivate jobOpeningService
+jobOpening --> simple: customerJobOpening list
+deactivate jobOpening
+simple -> simple: sendSHOW_JOB_OPENINGS(openingsList)
+simple -> translator: serializeListJobOpenings(list)
+activate translator
+translator --> simple: byte[] message
+deactivate translator
+simple -> Capp: writeObject(Translator.encode(1, MessageCode.SHOW_JOB_OPENINGS, data, null))
+deactivate Capp
+deactivate simple
+end
+
+else false
+semaphore --> server: false
+deactivate semaphore
+server --> Rcomp: Could not accept new connection. The server is full!
+deactivate server
+end
+
+@enduml

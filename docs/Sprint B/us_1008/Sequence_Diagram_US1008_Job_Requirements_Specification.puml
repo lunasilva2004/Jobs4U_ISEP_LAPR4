@@ -1,0 +1,46 @@
+@startuml
+
+       title <size:20> Sequence Diagram US 1008 - Requirements Specification </size>
+
+       skinparam monochrome false
+       skinparam packageStyle rect
+       skinparam defaultFontName FG Virgil
+       skinparam shadowing false
+
+       actor LanguageEngineer as Actor #lightblue
+       participant ":RegisterPluginUI" as UI <<presentation>>
+       participant ":RequirementController" as Controller <<application>>
+       participant "requirementSpecification:RequirementSpecification" as requirementSpecification <<domain>>
+       participant ":RequirementRepo" as repo <<repository>>
+
+       activate Actor
+       Actor -> UI: Asks to deploy and configure \na plugin for the requirement specification
+
+            activate UI
+            UI -> Controller **: create
+            UI --> Actor: Requests the name, description \nand className to register the plugin
+            Actor -> UI: Provide the name, description \nand className for the plugin
+            UI -> Controller: registerRequirementSpecification(name, \ndescription, className)
+
+                activate Controller
+                Controller -> requirementSpecification **: create
+                Controller -> requirementSpecification: withName(name)
+                Controller -> requirementSpecification: withDescription(description)
+                Controller -> requirementSpecification: withClassName(className)
+                Controller -> requirementSpecification: registerRequirementSpecification(name, \ndescription, className)
+                requirementSpecification --> Controller: requirementSpecification
+                Controller -> repo: save()
+
+                    activate repo
+                    repo --> Controller: requirementSpecification
+                    deactivate repo
+
+                Controller --> UI: requirementSpecification
+                deactivate Controller
+
+            UI --> Actor: displayOperationSuccess
+            deactivate UI
+
+       deactivate Actor
+
+@enduml

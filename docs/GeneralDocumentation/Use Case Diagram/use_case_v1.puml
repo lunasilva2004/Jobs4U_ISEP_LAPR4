@@ -1,0 +1,212 @@
+@startuml
+
+title Use Case Diagram
+
+left to right direction
+
+actor Admin
+actor Operator
+actor LanguageEngineer
+actor CustomerManager
+actor Candidate
+actor Customer
+actor ApplicationFileBot
+
+skinparam usecase {
+    BackgroundColor LightBlue
+    ArrowColor Black
+    BorderColor Black
+    FontColor Black
+    FontSize 14
+}
+
+skinparam title {
+    FontSize 30
+}
+
+rectangle BackOffice {
+
+    'SPRINT B
+    'US 1000
+    usecase "Register Users" as BO1
+    usecase "Disable/Enable Users " as BO2
+    usecase "List Users" as BO3
+
+    'US 1001
+    usecase "Register Customers" as BO4
+
+    'US 1002
+    usecase "Register Job Opening" as BO5
+
+    'US 1003
+    usecase "List Job Openings" as BO6
+
+    'US 2000a
+    usecase "Register Candidate and create\n the corresponding User" as BO7
+
+    'US 2000c
+    usecase "List all Candidates" as BO8
+
+    'US 2002
+    usecase "Register an Application of a Candidate" as BO10
+
+    'US 1005
+    usecase "List all applications for a Job Opening" as BO11
+
+    'US 1006
+    usecase "Display all the personal data of a Candidate" as BO12
+
+    'US 1006b
+    usecase "Display all the personal data of a Candidate,\n including his/her Applications" as BO13
+
+    'US 1007
+    usecase "Setup the phases of the process for a Job Opening" as BO14
+
+    'US 1008
+    usecase "Deploy and configure a Plugin" as BO15
+
+    'US 1009
+    usecase "Select the Requirements Specification" as BO16
+
+    'US 1011
+    usecase "Select the Interview Model to use" as BO17
+
+    'US 1012
+    usecase "Generate and Export a Template Text File" as BO18
+
+    'US 2003
+    usecase "Generate and Export a Template Text File" as BO19
+
+
+    'SPRINT C
+    'US 1013
+    usecase "Rank the candidates for a Job Opening" as BO20
+
+    'US 1004
+    usecase "Edit a Job Opening" as BO21
+
+    'US 2000b
+    usecase "Enable/Disable a Candidate" as BO22
+
+    'US 1010
+    usecase "Open or Close phases of the process for a Job Opening" as BO23
+
+    'US 1014
+    usecase "Record the time and date for an interview" as BO24
+
+    'US 1015
+    usecase "Verification of Requirements" as BO25
+
+    'US 1016
+    usecase "Notify Candidates" as BO26
+
+    'US 1017
+    usecase "Upload a Text File with the Candidate responses" as BO27
+
+    'US 1018
+    usecase "Evaluates (grades) the Interviews for a Job Opening" as BO28
+
+    'US 1019
+    usecase "Ordered list of Candidates, using the Job Interview Points (grades)" as BO29
+
+    'US 1020
+    usecase "Publish the results of the selection og Candidates for a Job Opening" as BO30
+
+    'US 1021
+    usecase "Display all the data of a Application" as BO31
+
+    'US 2004
+    usecase "Text File with the data fields (requirements)" as BO33
+
+    'US 4000
+    usecase "Top 20 of the most referenced words in the files uploaded\n by a candidate and where they are in the document" as BO34
+
+
+        Admin --- BO1
+        Admin --- BO2
+        Admin --- BO3
+
+
+        CustomerManager --- BO4
+        CustomerManager --- BO5
+        CustomerManager --- BO6
+        CustomerManager --- BO11
+        CustomerManager --- BO12
+        CustomerManager --- BO13
+        CustomerManager --- BO14
+        CustomerManager --- BO16
+        CustomerManager --- BO17
+        CustomerManager --- BO18
+        CustomerManager --- BO20
+        CustomerManager --- BO21
+        CustomerManager --- BO23
+        CustomerManager --- BO24
+        CustomerManager --- BO25
+        CustomerManager --- BO26
+        CustomerManager --- BO27
+        CustomerManager --- BO28
+        CustomerManager --- BO29
+        CustomerManager --- BO30
+        CustomerManager --- BO31
+        CustomerManager --- BO34
+
+
+        Operator --- BO7
+        Operator --- BO8
+        Operator --- BO10
+        Operator --- BO19
+        Operator --- BO22
+        Operator --- BO33
+
+
+        LanguageEngineer --- BO15
+
+}
+
+rectangle CandidateApp {
+
+    'SPRINT C
+    'US 3000
+    usecase "List all my applications and their state" as BO35
+
+    'US 3001
+    usecase "Notified in my Application when the state of one of my applications changes" as BO36
+
+
+        Candidate --- BO35
+        Candidate --- BO36
+
+}
+
+rectangle ApplicationsFileBot {
+
+    'SPRINT B
+    'US 2001
+    usecase "Process the files produced by the Applications Email Bot" as BO9
+
+    'SPRINT C
+    'US 2001b
+    usecase "Process the files produced by the Applications Email Bot" as BO32
+
+
+        ApplicationFileBot --- BO9
+        ApplicationFileBot --- BO32
+
+}
+
+rectangle CustomerApp {
+
+    'SPRINT C
+    'US 3002
+    usecase "List all my Job Openings, including Job Reference, Position, Active Since and Number of Applicants" as BO37
+
+    'US 3003
+    usecase "Notified in my Application when the state (phase) of my Job Openings changes" as BO38
+
+
+        Customer --- BO37
+        Customer --- BO38
+
+}
+
+@enduml

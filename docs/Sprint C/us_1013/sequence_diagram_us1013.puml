@@ -1,0 +1,154 @@
+@startuml
+title <size:20>Sequence Diagram US 1013</size>
+
+'http://plantuml.com/skinparam.html
+skinparam monochrome false
+skinparam packageStyle rect
+skinparam defaultFontName FG Virgil
+skinparam shadowing false
+
+actor CustomerManager as Actor #lightblue
+
+
+activate Actor
+participant ":RankUI" as UI <<presentation>>
+participant ":RankController" as Controller <<application>>
+participant ":JobOpeningRepository" as repojob <<repository>>
+participant ":JobApplicationRepository" as repoapp <<repository>>
+participant ":JobOpening" as O <<entity>>
+participant ":JobOpeningDTO" as openingdto
+participant ":JobApplication" as J <<entity>>
+participant ":JobApplicatioDTO" as appdto
+participant ":Candidate" as C <<entity>>
+participant ":CandidateDTO" as candidatedto
+participant ":RankService" as Service <<service>>
+participant ":RankRepository" as repo <<repository>>
+
+activate Actor
+Actor -> UI : Asks to rank the candidates for a job opening
+
+activate UI
+
+UI -> Controller**: create
+UI -> Controller : getAllAnalysisJobOpenings()
+activate Controller
+Controller -> repojob : findJobOpeningsByPhase(PhaseType.ANALYSIS)
+activate repojob
+repojob --> Controller : List<JobOpening>
+deactivate repojob
+Controller --> UI : List of job openings
+deactivate Controller
+
+UI --> Actor : Shows and asks what job opening to rank
+Actor -> UI: Selects the job opening
+UI -> Controller : getJobApplicationsByJobReference(selectedJobOpening)
+activate Controller
+Controller -> repoapp : findByJobReference(jobOpening.identity())
+activate repoapp
+repoapp --> Controller : List<JobApplication>
+deactivate repoapp
+Controller --> UI : List of job applications
+deactivate Controller
+UI-> Controller : getVacancies(selectedJobOpening)
+activate Controller
+Controller -> O: toDTO()
+activate O
+O -> Controller: JobOpeningDTO
+deactivate O
+Controller -> openingdto : getVacancies()
+activate openingdto
+openingdto --> Controller : vacancies number
+deactivate openingdto
+
+
+Controller --> UI : vacancies number
+
+
+alt job applicationsList > vacancies
+
+    loop for each job application
+    UI -> Controller : getCandidateDetails(jobApplicationsList.get(i))
+    Controller -> J: toDTO()
+    activate J
+    J -> Controller: JobApplicationDTO
+    deactivate J
+    Controller -> appdto: getCandidate()
+    appdto --> Controller : Candidate
+    Controller -> C: toDTO()
+    activate C
+    C -> Controller: CandidateDTO
+    deactivate C
+    Controller -> candidatedto : getEmail()
+    activate candidatedto
+    candidatedto --> Controller : email
+    deactivate candidatedto
+    Controller -> appdto: getID()
+    activate appdto
+    appdto --> Controller : ID
+    deactivate appdto
+
+    end
+    Controller --> UI: Candidate details
+
+    UI --> Actor : Shows the candidate details and asks to select which applications to rank
+    Actor -> UI: Selects the applications to rank
+
+end
+
+loop for each (selected) job application
+UI -> Controller : getCandidateDetails(jobApplicationsList.get(i)
+Controller -> J: toDTO()
+    activate J
+    J -> Controller: JobApplicationDTO
+    deactivate J
+    Controller -> appdto: getCandidate()
+    appdto --> Controller : Candidate
+    Controller -> C: toDTO()
+    activate C
+    C -> Controller: CandidateDTO
+    deactivate C
+    Controller -> candidatedto : getEmail()
+    activate candidatedto
+    candidatedto --> Controller : email
+    deactivate candidatedto
+    Controller -> appdto: getID()
+    activate appdto
+    appdto --> Controller : ID
+    deactivate appdto
+Controller --> UI: Candidate details
+deactivate Controller
+UI --> Actor : Asks to order the job application
+Actor -> UI: Orders the job application
+UI -> Controller : addOrderToList(orders, order, jobApplication)
+activate Controller
+Controller -> Controller: add (new Order(order, jobApplication))
+deactivate Controller
+end
+
+loop for each job application
+alt !selectedApplications.contains(jobApplication)
+UI -> Controller: addNullOrderToList(orders, jobApplication)
+activate Controller
+Controller -> Controller: add(new Order(null, jobApplication))
+deactivate Controller
+end
+end
+
+UI -> Controller : saveRanking(selectedJobOpening, orders)
+activate Controller
+Controller -> Service : saveRanking(jobOpening, orders)
+activate Service
+Service -> repo **: create()
+Service -> repo : save(rank)
+activate repo
+repo --> Service : Rank
+deactivate repo
+Service --> Controller : Rank
+deactivate Service
+Controller --> UI : Rank
+deactivate Controller
+UI --> Actor : Displays operation success message
+deactivate Actor
+
+
+@enduml

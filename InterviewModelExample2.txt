@@ -1,0 +1,50 @@
+INTERVIEW: PROGRAMMER KNOWLEDGE IN JAVA
+DATE: 30-04-2024
+ABOUT: These sets of questions are designed to test the knowledge of a Java Programmer in various aspects of Java Programming.
+EMAIL: 1220688@isep.ipp.pt
+
+REQUIREMENT 1
+SHORT_ANSWER_QUESTION: What is the difference between an Interface and an Abstract class?
+ANSWER: An interface is a reference type in Java that is similar to a class. It is a collection of abstract methods. An abstract class is a class that cannot be instantiated and is designed to be subclassed by other classes. The main difference between an interface and an abstract class is that an interface can only contain abstract methods, while an abstract class can contain both abstract and concrete methods.
+
+REQUIREMENT 2
+SINGLE_CHOICE_QUESTION: Which of the following statements is true about Java interfaces?
+a) An interface can contain both abstract and concrete methods
+b) An interface can be instantiated
+c) A class can implement multiple interfaces
+d) An interface can extend multiple interfaces
+ANSWER: c)
+
+REQUIREMENT 3
+MULTIPLE_CHOICE_QUESTION: Which of the following statements are true about Java abstract classes?
+a) An abstract class can be instantiated
+b) An abstract class can contain abstract methods
+c) An abstract class can contain concrete methods
+d) A class can extend multiple abstract classes
+ANSWER: b), c)
+
+REQUIREMENT 4
+INTEGER_QUESTION: How many bits are used to represent a char in Java?
+ANSWER: 16
+
+REQUIREMENT 5
+DECIMAL_QUESTION: What is the value of Math.PI in Java?
+ANSWER: 3.141592653589793
+
+REQUIREMENT 6
+DATE_QUESTION: When was Java first released?
+ANSWER: 23-05-1995
+
+REQUIREMENT 7
+TIME_QUESTION: How long does it take, in minutes, for a Java program to execute if it contains a loop that iterates a million times, and each iteration takes one millisecond to complete?
+ANSWER: 00:16:40
+
+REQUIREMENT 8
+NUMERIC_SCALE_QUESTION: How would you rate your knowledge of Java on a scale of 1 through 5?
+ANSWER: 8
+
+REQUIREMENT 9
+T_F_QUESTION: Java is a purely object oriented programming language.
+a) True
+b) False
+ANSWER: a)

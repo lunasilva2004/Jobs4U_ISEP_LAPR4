@@ -1,0 +1,27 @@
+@startuml
+
+title <size:20>Sequence Diagram US 2001b</size>
+
+actor User
+participant "Processo Pai" as ProcessoPai
+participant "Processo Filho (Monitor)" as ProcessoFilho
+participant "Worker" as Worker
+
+User -> ProcessoPai: Iniciar sistema
+activate ProcessoPai
+
+loop Monitoramento
+    ProcessoPai -> ProcessoFilho: Monitorar diretório
+    activate ProcessoFilho
+    ProcessoFilho --> ProcessoPai: Arquivos detectados
+    deactivate ProcessoFilho
+    ProcessoPai -> Worker: Enviar arquivos
+    activate Worker
+    Worker --> ProcessoPai: Processamento concluído
+    deactivate Worker
+end
+
+User -> ProcessoPai: Encerrar sistema
+deactivate ProcessoPai
+
+@enduml

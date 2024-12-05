@@ -1,0 +1,55 @@
+@startuml
+title <size:20>Sequence Diagram US 1009</size>
+
+'http://plantuml.com/skinparam.html
+skinparam monochrome false
+skinparam packageStyle rect
+skinparam defaultFontName FG Virgil
+skinparam shadowing false
+
+actor LanguageEngineer as Actor #lightblue
+participant ":SelectRequirementUI" as UI <<presentation>>
+participant ":SelectRequirementController" as Controller <<application>>
+participant "jobOpening:JobOpening" as do <<domain>>
+participant ":RequirementRepo" as repo <<repository>>
+participant ":JobOpeningRepository" as repoj <<repository>>
+
+activate Actor
+
+Actor -> UI: Asks to select a requirement specification\nto be used for a job opening
+activate UI
+UI--> Actor: Asks for job reference
+Actor -> UI: Provides job reference
+UI -> Controller: findJobOpeningNameByReference(Designation reference)
+activate Controller
+Controller -> repo: findByReference(reference)
+activate repo
+repo --> Controller: jobOpening
+deactivate repo
+Controller --> UI: jobOpening
+deactivate Controller
+UI --> Actor: Asks for Requirement Specification name
+Actor -> UI: Provides Requirement Specification name
+UI -> Controller: findRequirementByName(String name)
+activate Controller
+Controller -> repoj: findByName(String name)
+activate repoj
+repoj --> Controller: requirement
+deactivate repoj
+Controller --> UI: requirement
+UI -> Controller: associateRequirementToJobOpening(String requirementName, Designation jobReference)
+Controller -> do: updateRequirement(plugin)
+activate do
+do --> Controller: jobOpening
+deactivate do
+Controller -> repoj: save(jobOpening)
+activate repoj
+repoj --> Controller: jobOpening
+deactivate repoj
+Controller --> UI: jobOpening
+deactivate Controller
+UI --> Actor: Displays operation success message
+deactivate UI
+deactivate Actor
+
+@enduml

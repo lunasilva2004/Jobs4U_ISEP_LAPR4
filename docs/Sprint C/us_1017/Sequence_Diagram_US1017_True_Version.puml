@@ -1,0 +1,104 @@
+@startuml
+
+title <size:20>Sequence Diagram US 1017 - True Version</size>
+
+skinparam monochrome false
+skinparam packageStyle rect
+skinparam defaultFontName FG Virgil
+skinparam shadowing false
+
+actor CustomerManager as Actor #lightblue
+participant ":UploadInterviewModelFileUI" as UI <<presentation>>
+participant ":UploadFileController" as Controller <<application>>
+participant ":JobOpeningRepository" as JobOpeningRepo <<repository>>
+participant ":JobApplicationRepository" as JobApplicationRepo <<repository>>
+participant ":InterviewModel_EX1" as IM <<domain>>
+participant ":FileService" as file <<service>>
+
+
+activate Actor
+Actor -> UI : Asks to upload a text file with the \ncandidate's answers (Interview)
+
+    activate UI
+    UI -> Controller**: create
+    UI -> Controller: getAllInterviewsJobOpenings()
+
+        activate Controller
+        Controller -> JobOpeningRepo: findJobOpeningsByPhase(PhaseType.INTERVIEWS)
+
+            activate JobOpeningRepo
+            JobOpeningRepo --> Controller:  List<JobOpening>
+            deactivate JobOpeningRepo
+
+        Controller --> UI: jobOpeningList
+        deactivate Controller
+
+    UI --> Actor: Asks to select the Job Opening
+    deactivate UI
+
+Actor -> UI: Selects the Job Opening
+
+    activate UI
+    UI -> Controller: getJobApplicationsByJobReference(selectedJobOpening.toDTO().getJobReference())
+
+        activate Controller
+        Controller -> JobApplicationRepo: findByJobReference(jobReference)
+
+            activate JobApplicationRepo
+            JobApplicationRepo --> Controller:  List<JobApplication>
+            deactivate JobApplicationRepo
+
+        Controller --> UI: jobApplicationsList
+        deactivate Controller
+
+    UI --> Actor: Asks to select a Job Application
+    deactivate UI
+
+Actor -> UI: Selects the Job Application
+
+    activate UI
+    UI --> Actor: Asks for the path of the file
+    deactivate UI
+
+Actor -> UI: Provides the path of the file
+
+    activate UI
+    UI -> Controller: verifyInterviewSyntax(filePath)
+
+        activate Controller
+        Controller ->IM: isFileSyntaxCorrect(filePath)
+
+            activate IM
+            IM --> Controller: true
+            deactivate IM
+
+        Controller --> UI: true
+        deactivate Controller
+
+    UI -> Controller: uploadInterviewModelFile(filePath, selectedJobOpening, selectedJobApplication)
+
+        activate Controller
+        Controller -> file**: create()
+        Controller -> file: createDirectoryIfNotExistsJP(selectedJobOpening)
+
+            activate file
+            Controller -> file: createDirectoryIfNotExistsJA(selectedJobOpening, selectedJobApplication)
+            Controller -> file: moveFileJA(filePath, selectedJobOpening, selectedJobApplication)
+            file --> Controller: newFilePath
+            deactivate file
+
+
+        Controller -> Controller: saveFileJobApp(selectedJobApplication, newFilePath)
+        Controller -> JobApplicationRepo: save(fileJobApp)
+
+            activate JobApplicationRepo
+            JobApplicationRepo --> Controller: fileJobApp
+            deactivate JobApplicationRepo
+
+        Controller --> UI: fileJobApp
+        deactivate Controller
+
+    UI --> Actor: displays operation success
+    deactivate UI
+
+@enduml

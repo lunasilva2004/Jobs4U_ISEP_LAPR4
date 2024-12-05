@@ -1,0 +1,18 @@
+@startuml
+title <size:20>Sequence Diagram US 1012</size>
+
+'http://plantuml.com/skinparam.html
+skinparam monochrome false
+skinparam packageStyle rect
+skinparam defaultFontName FG Virgil
+skinparam shadowing false
+
+actor "Customer Manager" as U #lightblue
+participant ":GenerateIMTemplateUI" as C <<application>>
+
+U -> C: Asks for a new Interview Model Template
+activate C
+C --> U: Creates a new Interview Model Template file
+deactivate C
+
+@enduml

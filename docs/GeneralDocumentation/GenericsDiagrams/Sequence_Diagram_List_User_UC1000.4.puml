@@ -1,0 +1,38 @@
+@startuml
+
+title <size:20>Sequence Diagram - List User - UC 1000.4</size>
+
+skinparam monochrome false
+skinparam packageStyle rect
+skinparam defaultFontName FG Virgil
+skinparam shadowing false
+
+actor Admin as Actor #lightblue
+participant ":ListUserUI" as UI <<presentation>>
+participant ":ListUserController" as Controller <<application>>
+participant ":UserRepository" as Repository <<repository>>
+
+Actor -> UI: List All Users
+activate Actor
+
+activate UI
+    UI -> Controller**: create
+
+
+    UI -> Controller: elements()
+    activate Controller
+        Controller -> Repository: findAll()
+
+
+    activate Repository
+    Repository-->Controller: SystemUsers
+    deactivate Repository
+
+
+            Controller --> UI: SystemUsers
+     deactivate Controller
+
+        UI-->Actor: elementPrinter()
+deactivate UI
+deactivate Actor
+@enduml

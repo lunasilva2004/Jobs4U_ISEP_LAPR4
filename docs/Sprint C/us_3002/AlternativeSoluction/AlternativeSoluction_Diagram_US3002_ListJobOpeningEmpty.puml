@@ -1,0 +1,28 @@
+@startuml
+title Alternative_Soluction_Diagram_US3002_ListJobOpeningsEmpty
+
+actor Customer as actor #lightblue
+participant ":ListJobOpeningsForCustomerUI" as ui <<presentation>>
+participant ":ListJobOpeningController" as controller <<application>>
+participant ":ListJobOpeningService" as service <<service>>
+participant ":JobOpeningRepository" as repo <<repository>>
+
+activate actor
+actor -> ui : Requests to list all his job openings \n(job reference, function, start date, \nnumber of job applications)
+activate ui
+ui -> controller: listJobOpeningsForCustomer()
+activate controller
+controller -> service: listJobOpeningsForCustomer(email)
+activate service
+service -> repo: findByCustomerEmail(email.toString())
+activate repo
+repo --> service: List<JobOpening>
+deactivate repo
+service --> controller: empty list
+deactivate service
+controller --> ui: empty list
+deactivate controller
+ui --> actor: Displays error message
+deactivate ui
+
+@enduml

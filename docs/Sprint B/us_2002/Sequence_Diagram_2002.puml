@@ -1,0 +1,91 @@
+@startuml
+
+title <size:20>Sequence Diagram US 2002</size>
+
+skinparam monochrome true
+skinparam packageStyle rect
+skinparam defaultFontName FG Virgil
+skinparam shadowing true
+
+actor Operator as Actor
+participant ":RegisterApplicaitonUI" as UI <<presentation>>
+participant ":RegisterApplicaitonController" as Controller <<application>>
+participant ":candidateRepository" as CandidateRepository <<repository>>
+participant ":fileRepository" as FileRepository <<repository>>
+participant ":jobOpeningRepository" as JobOpeningRepository <<repository>>
+participant ":JobApplicationBuilder" as JobApplicationBuilder <<builder>>
+participant "jobApplication:jobApplication" as DomainC <<domain>>
+participant ":jobApplicationRepository" as JobApplicationRepository <<repository>>
+
+activate Actor
+Actor -> UI: Asks to register a new jobApplication \nfor a candidate
+activate UI
+    UI -> Controller**: create
+    UI --> Actor: Ask candidate email and shared folder path
+    Actor -> UI: Types candidate email and shared folder path
+
+
+    UI -> Controller: registerJobApplication(jobReference,email,id,filesPath,date,"", \nState.CONFIRMED,firstName,lastName,phoneNumber)
+    activate Controller
+
+
+        Controller -> CandidateRepository: findByEmail(email)
+        activate CandidateRepository
+        CandidateRepository --> Controller : candidate
+        deactivate CandidateRepository
+        alt candidate null
+
+        Controller -> CandidateRepository: save(newCandidate)
+
+        ref over Controller
+                    UC 1000.1
+
+        end
+
+        end
+
+        Controller -> FileRepository: save(file)
+
+        activate FileRepository
+        deactivate FileRepository
+
+        Controller -> FileRepository: findByName(filesName)
+
+        activate FileRepository
+        deactivate FileRepository
+
+
+
+
+note right of JobApplicationBuilder: JobApplicationBuilder is used to create \na valid Customer entity
+        Controller -> JobApplicationBuilder** : create
+
+        Controller -> JobApplicationBuilder : withCandidate(candidate)
+        Controller -> JobApplicationBuilder : withiD(iD)
+        Controller -> JobApplicationBuilder : withfilesUrl(filePath)
+        Controller -> JobApplicationBuilder : withState(state)
+        Controller -> JobApplicationBuilder : withDate(date)
+        Controller -> JobApplicationBuilder : withrank(rank)
+        activate JobApplicationBuilder
+        JobApplicationBuilder -> DomainC : registerNewJobApplication(iD,jobOpening,candidate,filesUrl,state,rank,date)
+        DomainC --> JobApplicationBuilder : jobApplication
+        JobApplicationBuilder --> Controller : jobApplication
+        deactivate JobApplicationBuilder
+
+
+         Controller -> JobOpeningRepository  : findByReference(jobReference)
+
+         Controller -> JobOpeningRepository  : addJobApplicationList(theJobApplication)
+
+
+        Controller -> JobApplicationRepository  : save(theJobApplication)
+
+
+
+    Controller --> UI : jobApplication
+    deactivate Controller
+
+    UI-->Actor: displayOperationSuccess
+deactivate UI
+deactivate Actor
+@enduml

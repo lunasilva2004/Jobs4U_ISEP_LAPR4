@@ -1,0 +1,39 @@
+@startuml
+
+       title <size:20>Sequence Diagram US 1008</size>
+
+       skinparam monochrome false
+       skinparam packageStyle rect
+       skinparam defaultFontName FG Virgil
+       skinparam shadowing false
+
+       actor LanguageEngineer as Actor #lightblue
+       participant ":UI" as UI <<presentation>>
+       participant ":PluginController" as Controller <<application>>
+       participant "plugin:Plugin" as plugin <<domain>>
+       participant ":PluginRepository" as repo <<repository>>
+
+       activate Actor
+       Actor -> UI: Asks to deploy and configure a plugin
+       activate UI
+       UI -> Controller **: create
+           UI --> Actor: Requests the name, description \nand className to register the plugin
+           Actor -> UI: Provide the name, description \nand className for the plugin
+           UI -> Controller: registerPlugin(name, description, className
+           activate Controller
+           Controller -> plugin **: create
+           Controller -> plugin: setName(name)
+           Controller -> plugin: setDescription(description)
+           Controller -> plugin: setClassName(className)
+               Controller -> plugin: registerPlugin(name, description, (className)
+               plugin --> Controller: plugin
+               Controller -> repo: savePlugin()
+               activate repo
+                   repo --> Controller: plugin
+               deactivate repo
+               Controller --> UI: plugin
+           deactivate Controller
+           UI --> Actor: displayOperationSuccess
+       deactivate UI
+       deactivate Actor
+       @enduml

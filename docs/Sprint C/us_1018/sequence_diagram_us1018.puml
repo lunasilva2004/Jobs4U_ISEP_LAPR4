@@ -1,0 +1,84 @@
+@startuml
+title <size:20>Sequence Diagram 1018</size>
+
+'http://plantuml.com/skinparam.html
+skinparam monochrome false
+skinparam packageStyle rect
+skinparam defaultFontName FG Virgil
+skinparam shadowing false
+
+actor CustomerManager as Actor #lightblue
+participant ":GradeInterviewUI" as UI <<presentation>>
+participant ":GradeInterviewController" as Controller <<application>>
+participant ":GradeInterviewService" as Service <<service>>
+participant ":JobOpeningRepository" as JobOpeningRepository <<repository>>
+participant ":JobApplicationRepository" as JobApplicationRepository <<repository>>
+participant ":InterviewModel_EX1" as InterviewModel_EX1 <<entity>>
+participant ":JobApplication" as JobApplication <<entity>>
+
+activate Actor
+Actor -> UI : Asks to grade the interview
+activate UI
+
+UI --> Actor: Ask for job reference of the job opening
+Actor -> UI: Types job reference of the job opening
+UI -> Controller**: create
+UI -> Controller : gradeInterview(jobReference)
+activate Controller
+Controller -> Service : gradeInterview(jobReference)
+activate Service
+
+Service -> JobOpeningRepository:findJobOpeningsByPhase(PhaseType.ANALYSIS)
+activate JobOpeningRepository
+
+JobOpeningRepository --> Service:List<JobOpenings>
+deactivate JobOpeningRepository
+
+loop foreach jobOpening
+
+alt jobOpening has interview model
+
+alt jobOpening.jobReference = jobReference
+
+
+
+Service -> JobApplicationRepository : findByJobReference(jobReference)
+
+activate JobApplicationRepository
+
+JobApplicationRepository --> Service : List<JobApplications>
+deactivate JobApplicationRepository
+
+loop foreach jobApplications
+
+Service -> InterviewModel_EX1:evaluateMultipleFiles(correctAnswersFilePath, candidateAnswersFilePaths)
+activate InterviewModel_EX1
+InterviewModel_EX1 --> Service : evaluationResults
+deactivate InterviewModel_EX1
+
+Service -> JobApplication:setInterviewGrade(grade)
+activate JobApplication
+deactivate JobApplication
+
+Service -> JobApplicationRepository: save(jobApplication)
+activate JobApplicationRepository
+deactivate JobApplicationRepository
+
+end loop
+end alt
+end alt
+end loop
+Service --> Controller: confirmation
+Controller --> UI: confirmation
+
+
+deactivate Service
+
+deactivate Controller
+
+
+
+UI --> Actor : displays operation info message
+deactivate UI
+
+@enduml

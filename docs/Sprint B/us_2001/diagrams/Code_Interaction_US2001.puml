@@ -1,0 +1,36 @@
+@startuml
+
+title <size:20>Code Interaction - US 2001</size>
+
+struct "us_2001.c" as ApplicationFileBot {
+    - inputDirectory: string
+    - outputDirectory: string
+    - numWorkers: int
+    - timeInterval: int
+    - running: bool
+    - pipeFd: int[2]
+    - workerPipeFds: int[NUM_WORKERS][2]
+
+    + extract_job_reference(file_path: const char*): char*
+    + extract_application_number(path: const char*): int
+    + mkdir_p(path: const char*): int
+    + process_file(worker_id: int): void
+    + distribute_file_to_worker(): void
+    + monitor_directory(directory: const char*): void
+    + createPipes(): void
+    + generate_report(outputDir: const char*): void
+    + handle_signal(signal: int): void
+    + main(): int
+}
+
+struct "utests.c" as UnitTests {
+    + test_extract_application_number(): char*
+    + test_extract_job_reference(): char*
+    + test_mkdir_p(): char*
+    + all_tests(): char*
+    + main(argc: int, argv: char**): int
+}
+
+UnitTests ..> ApplicationFileBot: tests
+
+@enduml

@@ -1,0 +1,192 @@
+@startuml
+
+title <size:30>Class Diagram - Server - 3001</size>
+
+hide circle
+skinparam packageStyle rect
+
+skinparam class {
+    BackgroundColor LightBlue
+    ArrowColor Black
+    BorderColor Black
+    FontColor Black
+    FontSize 14
+}
+skinparam relationship {
+    ArrowColor Black
+    ArrowFontColor Black
+    ArrowFontSize 14
+}
+
+
+package FollowUpServer <<Rectangle>> {
+
+class RcompServer {
+    -PORT: int
+    +main(args: String[]): void
+    +init(): void
+    +stop(thread: Thread): void
+}
+
+class SimpleHandler {
+    -authz: AuthorizationService
+    -candidateRepository: CandidateRepository
+    -customerRepository: CustomerRepository
+    +SimpleHandler(socket: Socket)
+    +handle(): void
+    +authenticate(message: byte[]): boolean
+    +sendACK(): void
+    +sendERR(): void
+    +sendSHOW_NOTIF_JOB_APPLICATIONS(list: List<String>): void
+}
+
+class Handler {
+    -serverSocket: Socket
+    -sIn: ObjectInputStream
+    -sOut: ObjectOutputStream
+    +Handler(socket: Socket)
+    +handle(): void
+    +run(): void
+}
+
+class Server {
+    -serverSocket: ServerSocket
+    -executing: boolean
+    +Server(port: int)
+    +execute(): void
+    +stop(): void
+    +run(): void
+}
+
+
+}
+
+package CandidateAppSide <<Rectangle>>{
+
+class MainMenu {
+    -authz: AuthorizationService
+    +show(): boolean
+    +doShow(): boolean
+    -buildMainMenu(): Menu
+}
+
+class CandidateApp {
+    -theController: CommunicationController
+    +main(args: String[]): void
+}
+
+class NotificationsAction {
+    +execute(): boolean
+}
+
+class NotificationsUI <<presentation>>{
+    -communicationController: CommunicationController
+    +doShow(): boolean
+    +headline(): String
+}
+
+}
+
+package DataBase <<Rectangle>>{
+
+class JobApplicationRepository <<repository>>{}
+class CandidateRepository <<repository>>{}
+class CustomerRepository <<repository>>{}
+
+
+}
+
+package Core <<Rectangle>>{
+
+class CommunicationController <<application>>{
+    -service: CommunicationService
+    +initializeCommunication(socket: Socket): void
+    +testConnection(): int
+    +login(userEmail: String, password: String): boolean
+    +disconnect(): int
+    +listAllNotificationJobApplication(): List<String>
+}
+
+class MessageCode {
+    -code: int
+    +getCode(): int
+    +toString(): String
+}
+class Translator {
+    +encode(version: int, code: MessageCode, data1: byte[], data2: byte[]): byte[]
+    +decodeVersion(encodedMessage: byte[]): int
+    +decodeCode(encodedMessage: byte[]): int
+    +decodeData1Len(encodedMessage: byte[]): int
+    +decodeData1(encodedMessage: byte[]): byte[]
+    +decodeData2Len(encodedMessage: byte[]): int
+    +decodeData2(encodedMessage: byte[]): byte[]
+    +serializeNotificationJobApplication(list: List<String>): byte[]
+    +deserializeNotificationJobApplication(bytes: byte[]): List<String>
+}
+
+class Messenger {
+    -socket: Socket
+    -out: ObjectOutputStream
+    -in: ObjectInputStream
+    +Messenger(socket: Socket)
+    +sendMessage(message: byte[]): void
+    +receiveMessage(): byte[]
+}
+
+class ListNotificationJobApplicationController <<application>>{
+    -jobApplicationService: ListJobApplicationService
+    -authz: AuthorizationService
+    +listNotificationJobApplications(): List<String>
+}
+
+class CommunicationService <<service>>{
+    -serverMessenger: Messenger
+    +getInstance(): CommunicationService
+    +initializeComunication(socket: Socket): void
+    +testConnection(): int
+    +login(userEmail: String, password: String): boolean
+    +disconnect(): int
+    +listAllNotificationJobApplication(): List<String}
+}
+
+
+class ListNotificationJobApplicationService <<service>>{
+    -jobApplicationRepository: JobApplicationRepository
+    +listNotificationJobApplications(email: Email): List<String>
+}
+}
+
+
+
+MainMenu --> NotificationsAction
+
+CandidateApp --> CommunicationController
+
+NotificationsAction --> NotificationsUI
+
+NotificationsUI --> CommunicationController
+
+CommunicationController --> CommunicationService
+CommunicationController --> MessageCode
+
+Translator --> MessageCode
+
+Messenger --> Socket
+
+
+CommunicationService --> Messenger
+ListNotificationJobApplicationController --> ListNotificationJobApplicationService
+ListNotificationJobApplicationService --> JobApplicationRepository
+
+RcompServer --> Server
+
+SimpleHandler --> CandidateRepository
+SimpleHandler --> CustomerRepository
+SimpleHandler --> Handler
+SimpleHandler --> ListNotificationJobApplicationController
+
+Handler --> Socket
+
+Server --> ServerSocket
+
+@enduml

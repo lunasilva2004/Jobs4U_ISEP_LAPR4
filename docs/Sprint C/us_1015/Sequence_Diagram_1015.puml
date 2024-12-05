@@ -1,0 +1,82 @@
+@startuml
+
+title Sequence Diagram - Verify Requirements
+title <size:20>Sequence Diagram - 1015</size>
+
+'http://plantuml.com/skinparam.html
+skinparam monochrome false
+skinparam packageStyle rect
+skinparam defaultFontName FG Virgil
+skinparam shadowing false
+
+actor CustomerManager as Actor #lightblue
+participant ":VerifyRequirementsUI" as UI <<presentation>>
+participant ":VerifyRequirementsController" as Controller <<application>>
+participant ":JobOpeningRepository" as JobOpeningRepository <<repository>>
+participant ":JobApplicationRepository" as JobApplicationRepository <<repository>>
+participant ":JobApplicationEvaluatorService" as JobApplicationEvaluatorService <<service>>
+participant ":reflections" as reflections <<library>>
+
+activate Actor
+Actor -> UI: Verify Requirements for a Job Opening
+
+activate UI
+    UI -> Controller**: create()
+    activate Controller
+
+    UI -> Controller: getJobOpenings()
+        Controller -> JobOpeningRepository: findAll()
+            activate JobOpeningRepository
+
+        JobOpeningRepository-->Controller: jobOpenings
+        Controller-->UI: jobOpenings
+        UI-->Actor: Asks to select a JobOpening
+        Actor->UI: Selects a JobOpening
+        UI->Controller: getApplicationsWithoutRequirementsVerification(jobReference)
+        Controller->JobApplicationRepository: findApplicationsByJobOpeningReference(jobReference)
+        activate JobApplicationRepository
+        JobApplicationRepository-->Controller: jobApplications
+        Controller-->UI:jobApplications
+        UI --> Actor: Asks if wants to execute the verification of requirements
+                Actor -> UI: Responds
+                alt response is "Do the verification"
+                    UI -> Controller: verifyRequirementsConcurrently(jobReference)
+                    Controller -> JobApplicationDistributor: distributeJobApplicationsAmongThreads(jobApplicationIds, THREAD_COUNT)
+                    activate JobApplicationDistributor
+                    JobApplicationDistributor --> Controller: partitions
+                    par N Threads (One partition for each thread)
+                    Controller -> JobApplicationEvaluatorService: verifyRequirements(jobReference)
+                    activate JobApplicationEvaluatorService
+                    JobApplicationEvaluatorService --> JobOpeningRepository: findJobOpeningByReference(jobReference)
+                    JobOpeningRepository -> JobApplicationEvaluatorService: jobOpening
+                    JobApplicationEvaluatorService --> JobApplicationRepository: findJobApplicationById(jobApplicationId)
+                    JobApplicationRepository -> JobApplicationEvaluatorService: jobApplication
+                        JobApplicationEvaluatorService -> JobApplicationEvaluatorService: findRequirementsFile(files)
+                        alt requirementsFile is not null
+                            JobApplicationEvaluatorService -> reflections: generateTemplateResponses(requirementsSpecification)
+                            activate reflections
+                            reflections --> JobApplicationEvaluatorService: templateResponsesFilePath
+                            JobApplicationEvaluatorService -> reflections: evaluateFile(templateResponsesFilePath, candidateAnswersFilePath)
+                            reflections --> JobApplicationEvaluatorService: verificationResult
+                            JobApplicationEvaluatorService --> JobApplicationRepository: updateStateBasedOnVerificationResult(verificationResult)
+                            JobApplicationRepository -> JobApplicationRepository: save(jobApplication)
+                            JobApplicationEvaluatorService --> Controller : Requirements verified
+                        else requirementsFile is null
+                            JobApplicationEvaluatorService --> Controller: No requirements file found
+                        end
+                        deactivate reflections
+
+                    end
+                    Controller --> UI : Requirements verified
+                    UI --> Actor: Requirements verified
+                else response is "Cancel Action"
+                    UI --> Actor: "Action cancelled by the user."
+                end
+
+        deactivate UI
+        deactivate Actor
+        deactivate JobApplicationEvaluatorService
+        deactivate JobApplicationRepository
+        deactivate JobOpeningRepository
+        deactivate Controller
+        @enduml

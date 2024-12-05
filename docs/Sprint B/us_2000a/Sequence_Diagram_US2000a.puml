@@ -1,0 +1,50 @@
+@startuml
+title <size:20>Sequence Diagram US 2000a</size>
+
+'http://plantuml.com/skinparam.html
+skinparam monochrome false
+skinparam packageStyle rect
+skinparam defaultFontName FG Virgil
+skinparam shadowing false
+
+actor Operator as Actor #lightblue
+participant ":AddCandidateUI" as UI <<presentation>>
+participant ":AddCandidateController" as Controller <<application>>
+participant ":CandidateBuilder" as CandidateBuilder <<builder>>
+participant "candidate:Candidate" as DomainC <<domain>>
+participant ":CandidateRepository"  as CandidateRepository <<repository>>
+
+activate Actor
+Actor -> UI: Asks to register a new candidate \nand the corresponding user
+activate UI
+    UI -> Controller**: create
+    UI --> Actor: Ask candidate information \n(name, email and phone number)
+    Actor -> UI: Types name, email and phone \nnumber of the candidate
+
+    UI -> Controller: registerNewCandidate(name,\nemail, phoneNumber)
+    activate Controller
+        note left of CandidateBuilder: CandidateBuilder is used to create \na valid Candidate entity
+        Controller -> CandidateBuilder **: create
+        Controller -> CandidateBuilder : withName(name)
+        Controller -> CandidateBuilder : withEmail(email)
+        Controller -> CandidateBuilder : withPhoneNumber(phoneNumber)
+        Controller -> CandidateBuilder : registerNewCandidate()
+        activate CandidateBuilder
+        CandidateBuilder -> DomainC : registerNewCandidate(name, email, phoneNumber)
+        DomainC --> CandidateBuilder : candidate
+        CandidateBuilder --> Controller : candidate
+        deactivate CandidateBuilder
+
+        Controller -> CandidateRepository : save(candidate)
+
+        ref over Controller
+            UC 1000.1
+        end
+
+    Controller --> UI : candidate
+    deactivate Controller
+
+    UI-->Actor: displayOperationSuccess
+deactivate UI
+deactivate Actor
+@enduml

@@ -1,0 +1,78 @@
+@startuml
+title <size:20>Sequence Diagram US 2004 - True Version</size>
+
+'http://plantuml.com/skinparam.html
+skinparam monochrome false
+skinparam packageStyle rect
+skinparam defaultFontName FG Virgil
+skinparam shadowing false
+
+actor Operator as Actor #lightblue
+participant ":UploadRequirementsFileUI" as UI <<presentation>>
+participant ":UploadFileController" as controller <<application>>
+participant ":JobOpeningRepository" as openingrepo <<repository>>
+participant ":JobApplicationRepository" as applicationrepo <<repository>>
+participant ":RequirementSpecificationModel_Ex1" as requeriment <<domain>>
+participant ":FileService" as file <<service>>
+
+
+activate Actor
+Actor -> UI : asks to upload a text file with \nthe data fields (requirements)
+activate UI
+UI -> controller**: create
+UI -> controller: getAllScreeningJobOpenings()
+activate controller
+controller -> openingrepo: findJobOpeningsByPhase(PhaseType.SCREENING)
+activate openingrepo
+openingrepo --> controller: List<JobOpening>
+deactivate openingrepo
+controller --> UI: jobOpeningList
+deactivate controller
+UI --> Actor: asks to select the job opening
+deactivate UI
+Actor -> UI: selects the job opening
+activate UI
+UI -> controller: getJobApplicationsByJobReference(selectedJobOpening.toDTO().getJobReference())
+activate controller
+controller -> applicationrepo: findByJobReference(jobReference)
+activate applicationrepo
+applicationrepo --> controller: List<JobApplication>
+deactivate applicationrepo
+controller --> UI: jobApplicationsList
+deactivate controller
+UI --> Actor: asks to select a job application
+deactivate UI
+Actor -> UI: selects the job application
+activate UI
+UI --> Actor: asks for the path of the file
+deactivate UI
+Actor -> UI: provides the path of the file
+activate UI
+UI -> controller: verifyRequirementsSyntax(filePath)
+activate controller
+controller ->requeriment: isFileSyntaxCorrect(filePath)
+activate requeriment
+requeriment --> controller: true
+deactivate requeriment
+controller --> UI: true
+deactivate controller
+UI -> controller: uploadRequirementsFile(filePath, selectedJobOpening, selectedJobApplication)
+activate controller
+controller -> file**: create()
+controller -> file: createDirectoryIfNotExistsJPRequirements(JobOpening)
+activate file
+controller -> file: createDirectoryIfNotExistsJARequirements(selectedJobOpening, selectedJobApplication)
+controller -> file: moveFileJARequirements(filePath, selectedJobOpening, selectedJobApplication)
+file --> controller: newFilePath
+deactivate file
+controller -> controller: saveFileJobApp(selectedJobApplication, newFilePath)
+controller -> applicationrepo: save(fileJobApp)
+activate applicationrepo
+applicationrepo --> controller: FileJobApp
+deactivate applicationrepo
+controller --> UI: fileJobApp
+deactivate controller
+UI --> Actor: displays operation success
+deactivate UI
+
+@enduml

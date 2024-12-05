@@ -1,0 +1,22 @@
+@startuml
+title Process Diagram_US3000
+
+actor Candidate as actor #lightblue
+box ":System" #lightgrey
+participant ":CandidateApp" as CandidateApp #lightgreen
+participant ":FollowUpServer" as FollowUpServer #yellow
+
+activate actor
+actor -> CandidateApp :  Requests to list all his applications \nand their state (including the number \nof applicants)
+activate CandidateApp
+CandidateApp -> FollowUpServer : tries to establish a connection \nto the server
+activate FollowUpServer
+FollowUpServer --> CandidateApp : accepts the connection
+CandidateApp -> FollowUpServer : sends a message according to protocol \nwith the email of the candidate and the \ncode for listing the job applications
+FollowUpServer --> CandidateApp : sends the list of job applications \nand their state (including the number \nof applicants)
+deactivate FollowUpServer
+CandidateApp --> actor : shows the list of job applications \nand their state (including the number \nof applicants)
+deactivate CandidateApp
+deactivate actor
+end box
+@enduml

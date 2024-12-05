@@ -1,0 +1,145 @@
+@startuml
+hide methods
+hide circle
+hide attributes
+
+'skinparam linetype ortho
+'skinparam linetype polyline
+skinparam packageStyle rect
+
+skinparam class {
+    BackgroundColor LightBlue
+    ArrowColor Black
+    BorderColor Black
+    FontColor Black
+    FontSize 14
+}
+
+skinparam relationship {
+    ArrowColor Black
+    ArrowFontColor Black
+    ArrowFontSize 14
+}
+
+
+package "User Aggregate" {
+class User <<Entity>> <<Root>>
+
+class Role <<Enum>>
+class Name <<Value Object>>
+class Email <<Value Object>>
+class Password <<Value Object>>
+class PhoneNumber <<Value Object>>
+}
+
+
+package "Candidate Aggregate" {
+class Candidate <<Entity>> <<Root>>
+
+class CurriculumVitae <<Value Object>>
+}
+
+
+package "Application Aggregate" {
+class Application <<Entity>> <<Root>>
+
+class ApplicationFileBot <<Entity>>
+class ApplicationEmailBot <<Entity>>
+}
+
+
+package "Job Opening Aggregate" {
+class JobOpening <<Entity>> <<Root>>
+
+class Company <<Value Object>>
+class JobReference <<Value Object>>
+class ContractType <<Enum>>
+class Function <<Value Object>>
+class Mode <<Enum>>
+class Address <<Value Object>>
+class Vacancies <<Value Object>>
+class Requirements <<Value Object>>
+}
+
+
+package "Operator Aggregate" {
+class Operator <<Entity>> <<Root>>
+}
+
+
+package "Interview Aggregate" {
+class Interview <<Entity>> <<Root>>
+
+class InterviewModel <<Value Object>>
+}
+
+
+package "Admin Aggregate" {
+class Admin <<Entity>> <<Root>>
+}
+
+
+package "Customer Aggregate" {
+class Customer <<Entity>> <<Root>>
+}
+
+
+package "Customer Manager Aggregate" {
+class CustomerManager <<Entity>> <<Root>>
+
+class Phase <<Entity>>
+class Status <<Value Object>>
+}
+
+
+package "Language Engineer Aggregate" {
+class LanguageEngineer <<Entity>> <<Root>>
+}
+
+
+Candidate "1" -- "1" CurriculumVitae : has >
+Candidate "1" --- "*" Application : submits >
+Application "1" - "1" ApplicationEmailBot  : processes <
+ApplicationEmailBot -- ApplicationFileBot : processes >
+Operator "*" --- "*" Application : registers >
+Application "1" ------------- "*" Phase : has >
+Operator "*" --- "1" ApplicationFileBot : imports >
+Operator "1" --- "*" Candidate : registers >
+User "*" -- "1" Role : has >
+User "*" -- "1" Name : has >
+User "1" -- "1" Email : has >
+User "1" -- "1" PhoneNumber : has >
+User "1" -- "1" Password : has >
+User "1" -- "0..1" Candidate : is an <
+User "1" -- "0..1" Operator : is an <
+User "1" -- "0..1" Admin : is an <
+User "1" -- "0..1" CustomerManager : is an <
+User "1" -- "0..1" LanguageEngineer : is an <
+User "1" -- "0..1" Customer : is an
+Admin "*" -- "*" CustomerManager : registers >
+Admin "*" -- "*" Operator : registers >
+CustomerManager "1" --- "1..*" Application : analyzes >
+CustomerManager "1" --- "*" Phase : chooses >
+CustomerManager "1" --- "1" Status : decides >
+Phase "1" - "1..0" Status : has >
+CustomerManager "*" --- "*" Customer : registers >
+CustomerManager "*"--- "*" LanguageEngineer : instructs >
+Candidate "*" ---- "1" Interview : attends >
+CustomerManager "*" -- "*" Interview : schedules >
+Interview "*" -- "1" InterviewModel : selects >
+LanguageEngineer "*" -- "*" InterviewModel : creates >
+Company "1" -- "*" Customer : references >
+LanguageEngineer "*" -- "*" Requirements : develops >
+CustomerManager "*" -- "*" Requirements : selects >
+CustomerManager "*" -- "*" JobOpening : creates >
+JobOpening "*" --- "1" Company : has >
+JobOpening "1" ---  "1" JobReference : has >
+JobOpening "*" -- "1" ContractType : has >
+JobOpening "*" --- "1" Function : has >
+JobOpening "*" --- "1" Mode : has >
+JobOpening "*" --- "*" Vacancies : has >
+JobOpening "1" - "*" Requirements : includes >
+Company "*" -down- "1" Address : has >
+
+
+@enduml

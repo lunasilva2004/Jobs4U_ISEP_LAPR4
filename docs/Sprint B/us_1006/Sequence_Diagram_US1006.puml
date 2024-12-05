@@ -1,0 +1,31 @@
+@startuml
+title <size:20>Sequence Diagram US 1006</size>
+
+'http://plantuml.com/skinparam.html
+skinparam monochrome false
+skinparam packageStyle rect
+skinparam defaultFontName FG Virgil
+skinparam shadowing false
+
+actor CustomerManager as Actor #lightblue
+participant ":SeeCandidateInfoUI" as UI <<presentation>>
+participant ":SeeCandidateInfoController" as Controller <<application>>
+participant ":CandidateRepository" as repo <<repository>>
+
+activate Actor
+Actor -> UI: Asks to display all the personal data of a candidate
+activate UI
+    UI --> Actor: Request the email of the corresponding candidate
+    Actor -> UI: Provide the email of the corresponding candidate
+    UI -> Controller: findCandidateByEmail(email)
+    activate Controller
+        Controller -> repo: findByEmail(email)
+        activate repo
+            repo --> Controller:candidateInfo
+        deactivate repo
+        Controller --> UI: candidateInfo
+    deactivate Controller
+    UI --> Actor: Display the info of the candidate
+deactivate UI
+deactivate Actor
+@enduml

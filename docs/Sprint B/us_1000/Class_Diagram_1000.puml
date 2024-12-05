@@ -1,0 +1,162 @@
+@startuml
+
+title <size:20>Class Diagram US 1000</size>
+
+
+skinparam monochrome false
+skinparam packageStyle rect
+skinparam defaultFontName FG Virgil
+skinparam shadowing true
+
+class AddUserUI {
+
+      + AddUserUI()
+      # doShow() : boolean
+      + headline() : String
+}
+
+class ListUsersUI {
+
+      + ListUsersUI()
+      # doShow() : boolean
+      + headline() : String
+}
+
+class DeactivateUserUI {
+
+      + DeactivateUserUI()
+      # doShow() : boolean
+      + headline() : String
+}
+
+class ActivateUserUI {
+
+      + ActivateUserUI()
+      # doShow() : boolean
+      + headline() : String
+}
+
+
+'class MainMenu {
+'
+'    - REGISTER_CUSTOMER_OPTION : int
+'    - DISPLAY_PERSONAL_DATA_CANDIDATE_OPTION : int
+'    - LIST_APPLICATIONS_JOB_OPENING : int
+'    - REGISTER_JOB_OPENING : int
+'    '...
+'
+'    + doShow() : boolean
+'    + headline() : String
+'    - buildMainMenu() : Menu
+'    - buildCustomerManagerSettingsMenu() : Menu
+'        '...
+'
+'}
+
+class AddUserController {
+
+    + getRoleTypes()
+    + addUser(String username, String password, \nString firstName, String lastName, String email, \nSet<Role> roles, Calendar createdOn) : SystemUser
+    + addUser(String username, String password, \nString firstName, String lastName, String email, \nSet<Role> roles) : SystemUser
+
+
+}
+
+class ActivateUserController {
+
+    + ActivateUserController()
+    + registerNewCustomer(String name, String email, \nString phoneNumber, String address) : Customer
+    + getCustomerData() : Customer
+}
+
+class DeactivateUserController {
+
+    + DeactivateUserController()
+    + registerNewCustomer(String name, String email, \nString phoneNumber, String address) : Customer
+    + getCustomerData() : Customer
+}
+
+class ListUsersController {
+
+    + ListUsersController()
+    + registerNewCustomer(String name, String email, \nString phoneNumber, String address) : Customer
+    + getCustomerData() : Customer
+}
+
+
+class SystemUserBuilder {
+
+        - username : String
+        - rawPassword : String
+        - firstName : String
+        - lastName : String
+        - email : String
+
+
+        + withUserName(String username) : SystemUserBuilder
+        + withPassword(String rawPassword) : SystemUserBuilder
+        + withName(String name) : SystemUserBuilder
+        + withEmail(String email) : SystemUserBuilder
+        + withRoles(final Set<Role> someRoles) : SystemUserBuilder
+        + createdOn(Calendar createdOn) : SystemUserBuilder
+        + build() : SystemUser
+
+}
+
+Interface UserRepository {
+
+    findByActive(Boolean active) : SystemUser
+
+}
+
+Interface RepositoryFactory {
+
+    users() : UserRepository
+    userss(TransactionalContext autoTx) : UserRepository
+    '...
+
+}
+
+class UserJpaRepository {
+
+    + findByActive(Boolean active) : SystemUser
+}
+
+
+
+class InMemoryRepositoryFactory {
+
+    + userss() : UserRepository
+    + users(TransactionalContext tx) : UserRepository
+    '...
+}
+
+
+
+class JpaRepositoryFactory {
+
+    + users() : UserRepository
+    + users(TransactionalContext autoTx) :UserRepository
+    '...
+
+}
+
+AddUserUI --> AddUserController
+ListUsersUI --> ListUsersController
+ActivateUserUI --> ActivateUserController
+DeactivateUserUI --> DeactivateUserController
+
+
+AddUserController --> SystemUserBuilder
+AddUserController --> UserRepository
+RepositoryFactory <|.. JpaRepositoryFactory
+RepositoryFactory <|.. InMemoryRepositoryFactory
+
+ActivateUserController --> UserRepository
+DeactivateUserController --> UserRepository
+
+UserRepository<|.. UserJpaRepository
+
+
+
+@enduml

@@ -1,0 +1,68 @@
+------------------------------
+         D E S I G N
+------------------------------
+
+-> Using the base structure of EAPLI Base Project Application based on layers
+
+Domain Classes Used:
+    - JobOpening
+
+Controller Classes Used:
+    - JobOpeningController
+
+Repository Classes Used:
+    - JobOpeningRepository
+
+System Diagram: (also available in this folder on image format)
+
+       @startuml
+       'http://plantuml.com/skinparam.html
+       skinparam monochrome true
+       skinparam packageStyle rect
+       skinparam defaultFontName FG Virgil
+       skinparam shadowing false
+
+       actor CustomerManager as Actor
+       participant RegisterJobOpeningUI as UI <<presentation>>
+       participant RegisterJobOpeningController as Controller <<application>>
+       participant JobOpeningBuilder as JobOpeningBuilder <<builder>>
+       participant "jobOpening:JobOpening" as Domain <<domain>>
+       participant PersistenceContext <<framework>>
+       participant RepositoryFactory <<framework>>
+       participant JobOpeningRepository <<repository>>
+
+       Actor -> UI: Asks to register a new job opening
+       activate UI
+           UI -> Controller: create
+           UI --> Actor: Ask Job Opening information \n(JobReference, Company, ContractType, Function,\n Address, Mode, Vacancies, Requirements, Phase,\n StartDate, EndDate)
+           Actor -> UI: Types JobReference, Company, ContractType, Function,\n Address, Mode, Vacancies, Requirements, Phase,\n StartDate, EndDate of the job opening
+
+           UI -> Controller: registerJobOpening(JobReference, Company, ContractType, Function,\n Address, Mode, Vacancies, Requirements, Phase,\n StartDate, EndDate)
+           activate Controller
+               note right of JobOpeningBuilder: JobOpeningBuilder is used to create \na valid JobOpening entity
+               Controller -> JobOpeningBuilder : create
+               Controller -> JobOpeningBuilder : setName(name)
+               Controller -> JobOpeningBuilder : setEmail(email)
+               Controller -> JobOpeningBuilder : setPhoneNumber(phoneNumber)
+               Controller -> JobOpeningBuilder : createCandidate()
+               JobOpeningBuilder -> Domain : build(JobReference, Company, ContractType, Function,\n Address, Mode, Vacancies, Requirements, Phase,\n StartDate, EndDater)
+               Domain --> JobOpeningBuilder : jobOpening
+               JobOpeningBuilder --> Controller : jobOpening
+               deactivate JobOpeningBuilder
+
+
+               Controller -> PersistenceContext : repositories()
+               PersistenceContext -> RepositoryFactory : create()
+               RepositoryFactory -> JobOpeningRepository : create()
+               Controller -> JobOpeningRepository : save(jobOpening)
+               JobOpeningRepository --> Controller : jobOpening
+
+
+               deactivate JobOpeningBuilder
+
+           Controller --> UI : jobOpening
+           deactivate Controller
+
+           UI-->Actor: Sucess/Insuccess message
+       deactivate UI
+       @enduml

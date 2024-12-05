@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<persistence version="2.1" xmlns="http://xmlns.jcp.org/xml/ns/persistence">
+  <persistence-unit name="eapli.base">
+    <!--
+    <provider>org.eclipse.persistence.jpa.PersistenceProvider</provider>
+    -->
+    <provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
+
+    <class>eapli.framework.infrastructure.authz.domain.model.SystemUser</class>
+    <class>eapli.framework.infrastructure.authz.domain.model.Role</class>
+    <class>eapli.framework.infrastructure.authz.domain.model.RoleSet</class>
+    <class>eapli.framework.infrastructure.authz.domain.model.RoleAssignment</class>
+    <class>jobs4u.core.clientusermanagement.domain.ClientUser</class>
+    <class>jobs4u.core.clientusermanagement.domain.SignupRequest</class>
+    <class>jobs4u.core.customerusermanagement.domain.Customer</class>
+    <class>jobs4u.core.jobapplicationmanagement.domain.JobApplication</class>
+    <class>jobs4u.core.jobopeningmanagement.domain.JobOpening</class>
+    <class>jobs4u.core.candidateusermanagement.domain.Candidate</class>
+    <class>jobs4u.core.PluginManagement.RequirementsSpecificationManagement.domain.RequirementSpecification</class>
+    <class>jobs4u.core.PluginManagement.InterviewModelManagement.domain.InterviewModel</class>
+    <class>jobs4u.core.interviewmanagement.domain.Interview</class>
+    <class>jobs4u.core.jobopeningmanagement.domain.JobOpeningPhase</class>
+    <class>jobs4u.core.rankmanagement.domain.Rank</class>
+    <class>jobs4u.core.rankmanagement.domain.Order</class>
+
+
+
+    <properties>
+      <!--<property name="jakarta.persistence.jdbc.url" value="jdbc:h2:tcp://localhost/~/base"/>-->
+      <property name="jakarta.persistence.jdbc.url" value="jdbc:h2:~\base"/>
+
+      <property name="jakarta.persistence.jdbc.user" value="sa"/>
+      <property name="jakarta.persistence.jdbc.password" value=""/>
+      <property name="jakarta.persistence.jdbc.driver" value="org.h2.Driver"/>
+      <!--       <property name="jakarta.persistence.schema-generation.database.action" value="drop-and-create"/> -->
+      <!-- <property name="eclipselink.logging.level" value="FINE"/> -->
+      <!-- <property name = "hibernate.show_sql" value = "true" /> -->
+      <!--      <property name="hibernate.dialect" value="org.hibernate.dialect.H2Dialect"/>-->
+
+    </properties>
+  </persistence-unit>
+</persistence>

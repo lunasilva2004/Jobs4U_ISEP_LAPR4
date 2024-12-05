@@ -1,0 +1,168 @@
+@startuml
+
+title <size:28>Domain Model</size>
+
+hide methods
+hide circle
+hide attributes
+
+'skinparam linetype ortho
+'skinparam linetype polyline
+skinparam packageStyle rect
+
+skinparam class {
+    BackgroundColor LightBlue
+    ArrowColor Black
+    BorderColor Black
+    FontColor Black
+    FontSize 14
+}
+
+skinparam relationship {
+    ArrowColor Black
+    ArrowFontColor Black
+    ArrowFontSize 14
+}
+
+package "Candidate Aggregate" {
+class Candidate <<Entity>> <<Root>>
+
+class CandidateName <<Value Object>>
+class CandidatePhoneNumber <<Value Object>>
+class CandidateEmail <<Value Object>> <<ID>>
+
+Candidate "1"--> "1" CandidateName : has a
+Candidate "1" --> "1" CandidatePhoneNumber : has a
+Candidate "1" --> "1" CandidateEmail : has a
+}
+
+package "Customer Aggregate" {
+class Customer <<Entity>> <<Root>>
+
+class CustomerName <<Value Object>>
+class CustomerPhoneNumber <<Value Object>>
+class CustomerEmail <<Value Object>><<ID>>
+class CustomerAddress <<Value Object>>
+
+Customer "1"--> "1" CustomerName : has a
+Customer "1" --> "1" CustomerPhoneNumber : has a
+Customer "1" --> "1" CustomerEmail : has a
+Customer "1" --> "1" CustomerAddress : has a
+
+}
+
+package "JobApplication Aggregate" {
+class JobApplication <<Entity>> <<Root>>
+
+class Date <<Value Object>>
+class State <<Value Object>>
+class FileJobApp <<Value Object>>
+class VerificationResult <<Value Object>>
+class InterviewGrade <<Value Object>>
+
+JobApplication "1" --> "1" Date : has a
+JobApplication "1" -->"1" State : has a
+JobApplication "1" --> "1..*" FileJobApp : has a
+FileJobApp "1" --> "0..1"VerificationResult : can have
+JobApplication "1" --> "1" InterviewGrade : has a
+}
+
+package "Rank Aggregate" {
+class Rank <<Entity>> <<Root>>
+class Order <<Value Object>> <<Id>>
+Rank "1" --> "1..*" Order: has a
+}
+
+
+package "Job Opening Aggregate" {
+class JobOpening <<Entity>> <<Root>>
+
+class Company <<Value Object>>
+class Address <<Value Object>>
+class JobReference <<Value Object>> <<ID>>
+class ContractType <<Value Object>>
+class Function <<Value Object>>
+class Mode <<Value Object>>
+class Vacancies <<Value Object>>
+class JobOpeningPhase <<Value Object>>
+class PhaseType <<Value Object>>
+class Results <<Value Object>>
+class StartDate <<Date>>
+class EndDate <<Date>>
+
+class NumberOfApplicants <<Value Object>>
+class Address <<Value Object>>
+
+JobOpening "1" --> "0..1" Company : can have a
+Company "1" --> "1" Address : has
+JobOpening "1" --> "1" JobReference : has a unique
+JobOpening "1..*" --> "1" ContractType : has a
+JobOpening "1..*" --> "1" Function : has a
+JobOpening "1" --> "1" Mode : has a
+JobOpening "1" --> "1" Vacancies : has
+JobOpening "1" --> "4..5" JobOpeningPhase : have multiple
+JobOpeningPhase "1" --> "1" StartDate : has a
+JobOpeningPhase "1" --> "1" EndDate : has a
+JobOpeningPhase "1" --> "1" PhaseType : has a
+JobOpening "1" --> "1" Results : has a
+JobOpening "1" --> "1" NumberOfApplicants : has
+JobOpening "1..*" --> "0..1" Address : can have
+
+}
+
+
+
+JobOpening "1..*" ---down-> "1" Customer : done by
+'Candidate "1" ---down-> "0..*" Interview : has
+JobApplication "*" ---down-> "1" JobOpening : for an
+Candidate "1" <-right "*" JobApplication : is sent by
+
+package "Interview Model Aggregate"{
+class InterviewModel <<Entity>> <<Root>>
+
+class InterviewName <<Value Object>> <<ID>>
+class ClassName <<Value Object>>
+class Description <<Value Object>>
+
+InterviewModel "1" -->"1" InterviewName : has a
+InterviewModel "1" --> "1" ClassName : has a
+InterviewModel "1" --> "1" Description : has a
+}
+InterviewModel "0..*" <-up- "1" JobOpening : has a
+
+package "Requirement Model Aggregate"{
+class RequirementModel <<Entity>> <<Root>>
+
+class RequirementModelName <<Value Object>> <<ID>>
+class ClassName <<Value Object>>
+class Description <<Value Object>>
+
+RequirementModel "1" -->"1" RequirementModelName : has a
+RequirementModel "1" --> "1" ClassName : has a
+RequirementModel "1" --> "1" Description : has a
+}
+RequirementModel "0..1" <-down- "1" JobOpening : has a
+
+/'package "Plugin Aggregate"{
+class Plugin <<Entity>> <<Root>>
+class PluginName <<Value Object>> <<ID>>
+class ClassName <<Value Object>>
+class Description <<Value Object>>
+
+Plugin "1" -->"1" PluginName : has a
+Plugin "1" --> "1" ClassName : has a
+Plugin "1" --> "1" Description : has a
+}
+
+
+
+RequirementModel -- Plugin : is
+InterviewModel -- Plugin : is'/
+
+Rank "1" --> "1" JobOpening : for a
+Order "1" --> "1" JobApplication : for a
+
+
+
+
+@enduml

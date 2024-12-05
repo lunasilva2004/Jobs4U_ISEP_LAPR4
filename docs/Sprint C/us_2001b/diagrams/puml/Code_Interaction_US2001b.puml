@@ -1,0 +1,48 @@
+@startuml
+
+title <size:20>Code Interaction - US 2001</size>
+
+struct "us_2001b.c" as ApplicationFileBot {
+    - NUM_WORKERS: int
+    - EXTENDED_PATH_LENGTH: int
+    - INPUT_DIRECTORY: string
+    - OUTPUT_DIRECTORY: string
+    - MAX_FILES: int
+    - SHM_NAME: string
+    - SEM_NAME: string
+    - FILE_QUEUE: string
+    - running: bool
+    - sigusr1_received: bool
+
+    struct "shared_data_t" {
+    - file_paths[MAX_FILES][EXTENDED_PATH_LENGTH]: char
+    - file_count: int
+    - processed_count: int
+    - final_directory_paths[MAX_FILES][EXTENDED_PATH_LENGTH]: char }
+
+
+
+
+    + extract_job_reference(file_path: const char*): char*
+    + extract_application_number(path: const char*): int
+    + mkdir_p(path: const char*): int
+    + copy_file(source_path: const char*, destination_path: const char*): void
+    + monitor_directory(directory: const char*, shm: shared_data_t*, sem_excl: sem_t*): void
+    + generate_report(outputDir: const char*): void
+    + handle_signal(signal: int): void
+    + setup_signal_handlers(): void
+    + process_file(shm: shared_data_t*, sem_excl: sem_t*, sem_queue: sem_t*): void
+    + main(): int
+}
+
+struct "utests.c" as UnitTests {
+    + test_extract_application_number(): char*
+    + test_extract_job_reference(): char*
+    + test_mkdir_p(): char*
+    + all_tests(): char*
+    + main(argc: int, argv: char**): int
+}
+
+UnitTests ..> ApplicationFileBot: tests
+
+@enduml

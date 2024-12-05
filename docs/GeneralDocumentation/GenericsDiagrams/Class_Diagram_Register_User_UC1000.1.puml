@@ -1,0 +1,59 @@
+@startuml
+
+title <size:20>Class Diagram - Register User - UC 1000.1</size>
+
+hide methods
+hide circle
+hide attributes
+skinparam packageStyle rect
+
+skinparam class {
+    BackgroundColor LightBlue
+    ArrowColor Black
+    BorderColor Black
+    FontColor Black
+    FontSize 14
+}
+skinparam relationship {
+    ArrowColor Black
+    ArrowFontColor Black
+    ArrowFontSize 14
+}
+
+class AuthenticationService <<service>>
+class Session <<value>>
+class Username <<value>><<id>>
+class Password <<value>>
+class SystemUser <<aggregate root>><<entity>>
+class Name <<value>>
+class UserBuilder <<factory>>
+class Email<<value>>
+class RoleList <<value>>
+class Role <<value>>
+class RoleType <<enum>>
+class ActionRight <<enum>>
+
+
+
+AuthenticationService ..> Session
+AuthenticationService ..> Username
+AuthenticationService ..> Password
+UserBuilder ..> SystemUser
+SystemUser ..> ActionRight
+ActionRight ..> RoleType
+
+Session --> SystemUser
+SystemUser --> Username
+SystemUser --> Password
+SystemUser --> Name
+SystemUser --> Email
+SystemUser --> RoleList
+Role --> RoleType
+RoleList *--> Role
+
+
+
+
+
+
+@enduml

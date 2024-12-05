@@ -1,0 +1,55 @@
+@startuml
+
+title <size:20>Sequence Diagram - Register User - UC 1000.1</size>
+
+skinparam monochrome false
+skinparam packageStyle rect
+skinparam defaultFontName FG Virgil
+skinparam shadowing false
+
+actor Admin as Actor #lightblue
+participant ":AddUserUI" as UI <<presentation>>
+participant ":AddUserController" as Controller <<application>>
+participant ":UserBuilder" as Builder <<builder>>
+participant "user:User" as Domain <<domain>>
+participant ":UserRepository" as Repository <<repository>>
+
+Actor -> UI: Add User
+activate Actor
+
+activate UI
+    UI -> Controller**: create
+    UI --> Actor: Ask user information
+    Actor -> UI: Password,\nFirst Name,\nLast Name, E-Mail
+
+    loop option != 0
+        UI -> Actor: Show List\nof Role Types
+        Actor --> UI: Role Type
+    end
+
+    UI -> Controller: addUser(username, \npassword, firstName,\nlastName, email, \nroles)
+    activate Controller
+        note left of Builder:UserBuilder é usado para criar \numa entidade do tipo User num \nestado válido
+        Controller -> Builder**: create
+        Controller -> Builder:withUsername(username)
+        Controller -> Builder:withPassword(password)
+        Controller -> Builder:withFirstName(firstName)
+        Controller -> Builder:withLastName(lastName)
+        Controller -> Builder:withEmail(email)
+        Controller -> Builder:withRoles(roles)
+
+        Controller -> Builder:createUser()
+        activate Builder
+            Builder -> Domain: create (username,\npassword, firstName,\nlastName,email, roles)
+            Domain-->Builder: user
+            Builder --> Controller:user
+        deactivate Builder
+
+        Controller->Repository:save(user)
+        Controller-->UI: user
+    deactivate Controller
+
+        UI-->Actor: displayUserInfo
+deactivate UI
+deactivate Actor
+@enduml

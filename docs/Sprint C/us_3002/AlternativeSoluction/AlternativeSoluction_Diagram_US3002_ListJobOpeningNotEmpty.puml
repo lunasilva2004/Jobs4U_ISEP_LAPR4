@@ -1,0 +1,55 @@
+@startuml
+title Alternative_Soluction_Diagram_US3002_ListJobOpeningsEmpty
+
+actor Customer as actor #lightblue
+participant ":ListJobOpeningsForCustomerUI" as ui <<presentation>>
+participant ":ListJobOpeningController" as controller <<application>>
+participant ":ListJobOpeningService" as service <<service>>
+participant ":JobOpeningRepository" as repo <<repository>>
+participant ":JobOpening" as opening <<entity>>
+participant ":JobOpeningDTO" as dtoO <<dto>>
+
+
+activate actor
+actor -> ui : Requests to list all his job openings \n(job reference, function, start date, \nnumber of job applications)
+activate ui
+ui -> controller: listJobOpeningsForCustomer()
+activate controller
+controller -> service: listJobOpeningsForCustomer(email)
+activate service
+service -> repo: findByCustomerEmail(email.toString())
+activate repo
+repo --> service: List<JobOpening>
+deactivate repo
+service --> service:addJobOpeningDetails(customerJobOpenings)
+loop for each job opening
+    service -> opening: toDTO()
+    activate opening
+    opening --> service: JobOpeningDTO
+    deactivate opening
+    service -> dtoO: getJobReference()
+    activate dtoO
+    dtoO --> service: jobReference
+    deactivate dtoO
+    service -> dtoO: getFunction()
+    activate dtoO
+    dtoO --> service: function
+    deactivate dtoO
+    service -> dtoO: getStartDate()
+    activate dtoO
+    dtoO --> service: startDate
+    deactivate dtoO
+    service -> repo : countApplicationsByJobReference(jobReference)
+    activate repo
+    repo --> service: numberOfApplicants
+    deactivate repo
+end
+
+service --> controller: customerJobOpenings list
+deactivate service
+controller --> ui: customerJobOpenings list
+deactivate controller
+ui --> actor: Displays customer Job Openings list
+deactivate ui
+
+@enduml

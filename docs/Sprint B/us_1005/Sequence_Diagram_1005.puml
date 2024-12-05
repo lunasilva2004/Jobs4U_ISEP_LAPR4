@@ -1,0 +1,43 @@
+@startuml
+
+title Sequence Diagram - Register User
+title <size:20>Sequence Diagram - 1005</size>
+
+'http://plantuml.com/skinparam.html
+skinparam monochrome false
+skinparam packageStyle rect
+skinparam defaultFontName FG Virgil
+skinparam shadowing false
+
+actor CustomerManager as Actor #lightblue
+participant ":ListApplicationsUI" as UI <<presentation>>
+participant ":ListApplicationsController" as Controller <<application>>
+participant ":JobApplicationRepository" as Repository <<repository>>
+activate Actor
+Actor -> UI: List all job applications of a job opening
+
+activate UI
+    UI --> Actor: Ask job reference
+    Actor --> UI: Types job reference
+
+
+    UI -> Controller**: create
+
+
+    UI -> Controller: allJobApllications(jobReference)
+    activate Controller
+        Controller -> Repository: findByReference(jobReference).getJobApplications
+
+
+    activate Repository
+    Repository-->Controller: JobApplications
+    deactivate Repository
+
+
+            Controller --> UI: JobApplications
+     deactivate Controller
+
+        UI-->Actor: doshow()
+deactivate UI
+deactivate Actor
+@enduml

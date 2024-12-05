@@ -1,0 +1,80 @@
+@startuml
+
+title <size:20>Sequence Diagram US 1002</size>
+
+
+skinparam monochrome true
+skinparam packageStyle rect
+skinparam defaultFontName FG Virgil
+skinparam shadowing false
+
+actor CustomerManager as Actor
+participant ":RegisterJobOpeningUI" as UI <<presentation>>
+participant ":RegisterJobOpeningController" as Controller <<application>>
+participant ":JobOpeningBuilder" as JobOpeningBuilder <<builder>>
+participant ":JobOpening" as Domain <<domain>>
+participant PersistenceContext <<framework>>
+participant RepositoryFactory <<framework>>
+participant JobOpeningRepository <<repository>>
+
+activate Actor
+Actor -> UI: Asks to register a new job opening
+activate UI
+    UI -> Controller: create
+    activate Controller
+
+    UI --> Actor: Ask Job Opening information \n(jobReference, company, contractType, function,\n address, mode, vacancies, requirements, interview, phase,\n startDate, endDate, jobApplication)
+    Actor -> UI: Types jobReference, company, contractType, function,\n address, mode, vacancies, requirements,interview, phase,\n startDate, endDate, jobApplication of the job opening
+
+    UI -> Controller: registerJobOpening(jobReference, company, contractType, function,\n address, mode, vacancies, requirements, interview, phase,\n startDate, endDate, jobApplication)
+        note right of JobOpeningBuilder: JobOpeningBuilder is used to create \na valid JobOpening entity
+        Controller -> JobOpeningBuilder : create
+        activate JobOpeningBuilder
+        Controller -> JobOpeningBuilder : withJobReference(jobReference)
+        Controller -> JobOpeningBuilder : withCompany(company)
+        Controller -> JobOpeningBuilder : withContractType(contractType)
+        Controller -> JobOpeningBuilder : withFunction(function)
+        Controller -> JobOpeningBuilder : withAddress(address)
+        Controller -> JobOpeningBuilder : withMode(mode)
+        Controller -> JobOpeningBuilder : withJobApplication(jobApplication)
+        Controller -> JobOpeningBuilder : withInterview(interview)
+        Controller -> JobOpeningBuilder : withVacancies(vacancies)
+        Controller -> JobOpeningBuilder : withRequirements(requirements)
+        Controller -> JobOpeningBuilder : withPhase(phase)
+        Controller -> JobOpeningBuilder : withStartDate(startDate)
+        Controller -> JobOpeningBuilder : withEndDate(endDate)
+        Controller -> JobOpeningBuilder : build()
+        JobOpeningBuilder -> Domain : build(jobReference, company, contractType, function,\n address, mode, vacancies, requirements, interview, phase,\n startDate, endDate, jobApplication)
+        activate Domain
+        Domain --> JobOpeningBuilder : jobOpening
+        deactivate Domain
+        JobOpeningBuilder --> Controller : jobOpening
+
+
+        Controller -> PersistenceContext : repositories()
+        activate PersistenceContext
+        PersistenceContext -> RepositoryFactory : create()
+        activate RepositoryFactory
+        RepositoryFactory -> JobOpeningRepository : create()
+        activate JobOpeningRepository
+        Controller -> JobOpeningRepository : save(jobOpening)
+        JobOpeningRepository --> Controller : jobOpening
+
+
+
+    Controller --> UI : jobOpening
+    deactivate Controller
+
+    UI-->Actor: Sucess/Insuccess message
+
+deactivate PersistenceContext
+deactivate RepositoryFactory
+deactivate JobOpeningRepository
+deactivate Domain
+deactivate Controller
+deactivate UI
+deactivate Actor
+deactivate JobOpeningBuilder
+
+
+@enduml

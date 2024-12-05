@@ -1,0 +1,90 @@
+@startuml
+
+title Sequence Diagram - Open/Close Phases
+title <size:20>Sequence Diagram - 1010</size>
+
+'http://plantuml.com/skinparam.html
+skinparam monochrome false
+skinparam packageStyle rect
+skinparam defaultFontName FG Virgil
+skinparam shadowing false
+
+actor CustomerManager as Actor #lightblue
+participant ":ManagePhasesUI" as UI <<presentation>>
+participant ":ManagePhasesController" as Controller <<application>>
+participant ":JobOpeningRepository" as JobOpeningRepository <<repository>>
+participant ":JobOpening" as JobOpening <<entity>>
+
+activate Actor
+Actor -> UI: List all job openings
+
+activate UI
+
+    UI -> Controller**: create()
+    activate Controller
+    UI -> Controller: getJobOpenings()
+
+        Controller -> JobOpeningRepository: findAll()
+            activate JobOpeningRepository
+
+        JobOpeningRepository-->Controller: JobOpenings
+        Controller-->UI: JobOpenings
+        UI-->Actor: Asks to select a JobOpening
+        Actor->UI: Selects a JobOpening
+        UI->Controller: getCurrentPhase(jobReference)
+            Controller->JobOpeningRepository: findByReference(jobReference)
+            JobOpeningRepository-->Controller: jobOpening
+            Controller-->UI: currentPhase
+
+    UI -> Controller: getJobOpeningPhases(jobReference)
+    Controller -> JobOpeningRepository: findByReference(jobReference)
+    JobOpeningRepository --> Controller: jobOpening
+    Controller --> UI: jobOpeningPhases
+
+    alt jobOpeningPhases is empty
+        UI --> Actor: "No Phases Found! Please Setup Phases First!"
+        return
+    end
+
+    UI --> Actor: Asks if wants to change phase
+    Actor -> UI: Responds
+    alt response is "Next Phase"
+        UI -> Controller: nextPhase(jobReference)
+
+            Controller -> JobOpeningRepository: findByReference(jobReference)
+            activate JobOpeningRepository
+            JobOpeningRepository --> Controller: jobOpening
+            Controller -> JobOpening: nextPhase()
+            activate JobOpening
+            JobOpening --> Controller: isOperationSuccessfully
+            Controller -> JobOpeningRepository: save(jobOpening)
+            JobOpeningRepository --> Controller: jobOpening
+            Controller --> UI: currentPhase
+
+    else response is "Previous Phase"
+        UI -> Controller: previousPhase(jobReference)
+            Controller -> JobOpeningRepository: findByReference(jobReference)
+            JobOpeningRepository --> Controller: jobOpening
+            Controller -> JobOpening: previousPhase()
+            activate JobOpening
+            JobOpening --> Controller: isOperationSuccessfully
+            Controller -> JobOpeningRepository: save(jobOpening)
+            JobOpeningRepository --> Controller: jobOpening
+            Controller --> UI: currentPhase
+    else response is "Start Phases"
+        UI --> Controller: startPhases(jobReference)
+        Controller -> JobOpeningRepository: findByReference(jobReference)
+        JobOpeningRepository --> Controller: jobOpening
+        Controller -> JobOpening: startPhases()
+        activate JobOpening
+        JobOpening --> Controller: isOperationSuccessfully
+        Controller -> JobOpeningRepository: save(jobOpening)
+        JobOpeningRepository --> Controller: jobOpening
+        Controller --> UI: currentPhase
+    else response is "Cancel Action"
+        UI --> Actor: "Action cancelled by the user."
+    end
+
+deactivate UI
+deactivate Actor
+@enduml

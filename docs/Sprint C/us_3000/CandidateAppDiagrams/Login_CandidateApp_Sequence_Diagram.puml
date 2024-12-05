@@ -1,0 +1,55 @@
+@startuml
+title Login Diagram (CandidateApp)_US3000
+
+actor Candidate as actor #orange
+box "CandidateApp" #LightGreen
+participant ":ServerLoginUI" as login <<presentation>>
+end box
+
+box Core #lightblue
+participant ":CommunicationController" as com <<application>>
+participant ":CommunicationService" as service <<service>>
+participant ":Translator" as translator
+participant ":Messenger" as messenger
+end box
+
+participant "FollowUpServer" as server #orange
+
+activate actor
+actor -> login : asks to do the login
+activate login
+login -> com : login(userEmail, password)
+activate com
+com -> service : login(userEmail, password)
+activate service
+service -> translator : encode(1, MessageCode.AUTH, userEmail.getBytes(), password.getBytes())
+activate translator
+translator --> service : byte[] encode
+deactivate translator
+service -> messenger : sendMessage(message)
+activate messenger
+messenger -> server
+activate server
+server --> messenger
+deactivate server
+service -> messenger : receiveMessage()
+messenger --> service : byte[] response
+deactivate messenger
+service -> translator : decodeCode(response)
+activate translator
+translator --> service : MessageCode
+deactivate translator
+
+alt MessageCode.ACK
+service -> com : true
+com --> login : true
+login --> actor : Login successful
+else MessageCode.ERR
+service -> com : false
+deactivate service
+com --> login : false
+deactivate com
+login --> actor : Login failed
+end
+
+@enduml

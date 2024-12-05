@@ -1,0 +1,53 @@
+@startuml
+
+title <size:20>Sequence Diagram US 1001</size>
+
+skinparam monochrome true
+skinparam packageStyle rect
+skinparam defaultFontName FG Virgil
+skinparam shadowing true
+
+actor CustomerManager as Actor
+participant ":AddCustomerUI" as UI <<presentation>>
+participant ":AddCustomerController" as Controller <<application>>
+participant ":UserBuilder" as UserBuilder <<builder>>
+participant ":CustomerBuilder" as CustomerBuilder <<builder>>
+participant "customer:Customer" as DomainC <<domain>>
+participant ":CustomerRepository" <<repository>>
+
+activate Actor
+Actor -> UI: Asks to register a new customer \nand the corresponding user
+activate UI
+    UI -> Controller**: create
+    UI --> Actor: Ask customer information (name, \nemail, phone number and address)
+    Actor -> UI: Types name, email, phone number \nand address of the customer
+
+    UI -> Controller: registerNewCustomer(name, email, \nphoneNumber, address)
+    activate Controller
+        note right of CustomerBuilder: CustomerBuilder is used to create \na valid Customer entity
+        Controller -> CustomerBuilder** : create
+        Controller -> CustomerBuilder : withName(name)
+        Controller -> CustomerBuilder : withEmail(email)
+        Controller -> CustomerBuilder : withPhoneNumber(phoneNumber)
+        Controller -> CustomerBuilder : withAddress(address)
+        Controller -> CustomerBuilder : registerNewCustomer()
+        activate CustomerBuilder
+        CustomerBuilder -> DomainC : registerNewCustomer(name, email, phoneNumber, address)
+        DomainC --> CustomerBuilder : customer
+        CustomerBuilder --> Controller : customer
+        deactivate CustomerBuilder
+
+        Controller -> CustomerRepository : save(customer)
+
+        ref over Controller
+            UC 1000.1
+
+        end
+
+    Controller --> UI : customer
+    deactivate Controller
+
+    UI-->Actor: displayOperationSuccess
+deactivate UI
+deactivate Actor
+@enduml

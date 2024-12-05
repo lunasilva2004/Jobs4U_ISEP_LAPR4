@@ -1,0 +1,46 @@
+@startuml
+
+actor User as Actor
+participant "SeeCandidateInfoUI" as UI
+participant "SeeCandidateInfoController" as Controller
+participant "MostUsedWordsService" as Service
+participant "JobApplicationRepository" as JobApplicationRepo
+participant "CandidateRepository" as CandidateRepo
+participant "AnalyseFile" as AnalyseFile
+
+Actor -> UI : Enter candidate's email
+activate UI
+    UI -> Controller**: create()
+activate Controller
+UI -> Controller : findCandidateByEmail(email)
+Controller -> CandidateRepo : findByEmail(email)
+activate CandidateRepo
+CandidateRepo --> Controller : candidateOptional
+Controller --> UI : candidate
+alt candidate is null
+    UI -> Actor : Display "Candidate not found."
+else candidate is not null
+    UI -> Controller : processTopWordsForCandidate(email)
+    Controller -> JobApplicationRepo : findByCandidateEmail(email)
+    activate JobApplicationRepo
+    JobApplicationRepo --> Controller : jobApplications
+    Controller -> Service : processFiles(files)
+    activate Service
+    par N Threads (One partition for each thread)
+        Service -> AnalyseFile : new AnalyseFile(file)
+        activate AnalyseFile
+        AnalyseFile --> Service : wordFrequency
+        deactivate AnalyseFile
+    end
+    Service --> Controller : fileTopWords
+    Controller --> UI : topWords
+    UI --> Actor : Display candidate information
+    UI --> Actor : Display top words
+end
+deactivate UI
+deactivate Actor
+deactivate Service
+deactivate JobApplicationRepo
+deactivate Controller
+
+@enduml

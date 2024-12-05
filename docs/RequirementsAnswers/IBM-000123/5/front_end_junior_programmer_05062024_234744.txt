@@ -1,0 +1,20 @@
+TITLE: Front End Junior Programmer
+COMPANY: WORTEN
+ABOUT THIS JOB: Work hard and get nothing.
+EMAIL: 1221184@this.app
+
+REQUIREMENT 1
+NUMBER QUESTION: How many years of experience do you have in Java?
+ANSWER: 7
+
+REQUIREMENT 2
+TEXT QUESTION: What is your academic degree?
+ANSWER: Computer Science.
+
+REQUIREMENT 3
+MULTIPLE MULTIPLE-CHOICE QUESTION: Select the programing languages that you know.
+a) Java
+b) C#
+c) Python
+d) Ruby
+ANSWER: a), c)

@@ -1,0 +1,21 @@
+@startuml
+title Process Diagram_US3002
+actor Customer as actor #lightblue
+box ":System" #lightgrey
+participant ":CustomerApp" as CustomerApp #lightgreen
+participant ":FollowUpServer" as FollowUpServer #yellow
+
+activate actor
+actor -> CustomerApp : Requests to list all his job openings \n(job reference, function, start date, \nnumber of job applications)
+activate CustomerApp
+CustomerApp -> FollowUpServer : tries to establish a connection \nto the server
+activate FollowUpServer
+FollowUpServer --> CustomerApp : accepts the connection
+CustomerApp -> FollowUpServer : sends a message according to protocol \nwith the email of the customer and the \ncode for listing the job openings
+FollowUpServer --> CustomerApp : sends the list of job openings \n(job reference, function, start date, \nnumber of job applications)
+deactivate FollowUpServer
+CustomerApp --> actor : shows the list of job openings \n(job reference, function, start date, \nnumber of job applications)
+deactivate CustomerApp
+deactivate actor
+end box
+@enduml

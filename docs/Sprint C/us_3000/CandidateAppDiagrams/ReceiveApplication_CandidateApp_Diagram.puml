@@ -1,0 +1,64 @@
+@startuml
+title ListApplications Diagram (CandidateApp)_US3000
+
+actor Candidate as actor #orange
+box "CandidateApp" #LightGreen
+participant ":ServerUI" as ui <<presentation>>
+end box
+
+box Core #lightblue
+participant ":CommunicationController" as com <<application>>
+participant ":CommunicationService" as service <<service>>
+participant ":Translator" as translator
+participant ":Messenger" as messenger
+end box
+
+participant "FollowUpServer" as server #orange
+
+
+activate actor
+actor -> ui : Requests to list all his applications \nand their state (including the number \nof applicants)
+activate ui
+ui -> com**: create()
+activate com
+ui -> com: listAllJobApplications()
+com -> service**: create()
+activate service
+com -> service: listAllJobApplicationsForSpecificCandidate()
+service -> translator: encode(1, MessageCode.LIST_JOB_APPLICATIONS, null, null)
+activate translator
+translator --> service:  byte[] message
+deactivate translator
+service -> messenger: sendMessage(message)
+activate messenger
+messenger -> server
+server --> messenger
+service -> messenger: receiveMessage()
+deactivate messenger
+service -> translator: decodeCode(response)
+activate translator
+translator --> service: MessageCode
+deactivate translator
+
+alt MessageCode.SHOW_JOB_APPLICATIONS
+service -> translator: decodeData1(response)
+activate translator
+translator --> service: byte[] data
+deactivate translator
+service --> com: List<JobApplication> jobApplications
+com --> ui: List<JobApplication> jobApplications
+
+loop for each jobApplications
+ui --> actor: shows job application \nand their state (including the number \nof applicants)
+end
+
+else
+service --> com: error listing
+deactivate service
+com --> ui: error listing
+deactivate com
+ui --> actor: shows Error while listing job applications!
+end
+
+
+@enduml

@@ -1,0 +1,75 @@
+@startuml
+title <size:20>Sequence Diagram 1019</size>
+
+'http://plantuml.com/skinparam.html
+skinparam monochrome false
+skinparam packageStyle rect
+skinparam defaultFontName FG Virgil
+skinparam shadowing false
+
+actor CustomerManager as Actor #lightblue
+participant ":ListCandidatesByInterviewGradesUI" as UI <<presentation>>
+participant ":ListCandidatesByInterviewsGradeController" as Controller <<application>>
+participant ":ListCandidatesByInterviewsGradeService" as Service <<service>>
+participant ":InterviewModel_Ex1" as InterviewModel_Ex1 <<service>>
+participant ":JobOpeningRepository" as JobOpeningRepository <<repository>>
+participant ":JobApplicationRepository" as Repository <<repository>>
+participant ":JobApplication" as JobApplication <<entity>>
+participant ":JobApplicationDTO" as JobApplicationDTO <<dto>>
+
+
+activate Actor
+Actor -> UI : Asks to see a ordered list of Candidates by interview points
+activate UI
+UI -> Controller**: create
+UI -> Controller: allCandidatesByInterviewGrade()
+activate Controller
+Controller -> Service : allCandidatesByInterviewGrade()
+activate Service
+
+Service -> InterviewModel_Ex1**: create
+
+Service -> JobOpeningRepository:findJobOpeningsByPhase(PhaseType.ANALYSIS)
+activate JobOpeningRepository
+
+JobOpeningRepository --> Service:List<JobOpenings>
+deactivate JobOpeningRepository
+
+loop foreach jobOpening
+
+alt jobOpening.jobReference = jobReference
+
+
+
+
+Service -> Repository : findAll()
+activate Repository
+Repository --> Service : List<JobApplications>
+deactivate Repository
+loop foreach applications
+Service -> JobApplication: toDto()
+activate JobApplication
+JobApplication -> JobApplicationDTO**  : create
+JobApplication --> Service: JobApplicationDTO
+deactivate JobApplication
+
+Service -> Service: getCandidateJustification(jobReference,application,evaluator);
+
+
+
+
+end loop
+end alt
+end loop
+Service --> Controller : jobApplicationList
+deactivate Service
+
+Controller -> UI: jobApplicationList
+deactivate Controller
+
+UI -> UI: displayInformation
+
+UI --> Actor : display the ordered list of Candidates by interview points in descending order
+deactivate UI
+
+@enduml

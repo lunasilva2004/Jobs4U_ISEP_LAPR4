@@ -1,0 +1,52 @@
+@startuml
+title Alternative_Solution_Diagram_US3000_ListApplicationsEmpty
+
+actor Candidate as actor #lightblue
+participant ":ListApplicationsForCandidateUI" as ui <<presentation>>
+participant ":ListJobApplicationController" as controller <<application>>
+participant ":ListJobApplicationService" as service <<service>>
+participant ":JobApplicationRepository" as repo <<repository>>
+participant ":JobApplication" as application <<entity>>
+participant ":JobApplicationDTO" as dto <<dto>>
+participant ":JobOpeningDTO" as dtoO <<dto>>
+participant ":JobOpeningRepository" as repoO <<repository>>
+
+activate actor
+actor -> ui : Requests to list all his applications \nand their state (including the number \nof applicants)
+activate ui
+ui -> controller: listJobApplicationsForCandidate()
+activate controller
+controller -> service: listJobApplicationsForCandidate(email)
+activate service
+service -> repo: findByCandidateEmail(email.toString())
+activate repo
+repo --> service: List<JobApplication>
+deactivate repo
+service --> service: addApplicationDetails(candidateApplications)
+loop for each application in candidateApplications
+    service -> application: toDTO()
+    activate application
+    application --> service: JobApplicationDTO
+    deactivate application
+    service -> dto: getJobOpening().toDTO()
+    activate dto
+    dto --> service: JobOpeningDTO
+    deactivate dto
+    service -> dtoO: getJobReference()
+    activate dtoO
+    dtoO --> service: jobReference
+    deactivate dtoO
+    service -> repoO : countApplicationsByJobReference(jobReference)
+    activate repoO
+    repoO --> service: numberOfApplicants
+    deactivate repoO
+end
+
+service --> controller: candidateApplications list
+deactivate service
+controller --> ui: candidateApplications list
+deactivate controller
+ui --> actor: Displays candidate applications list
+deactivate ui
+
+@enduml

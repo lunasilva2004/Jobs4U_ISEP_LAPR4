@@ -1,0 +1,21 @@
+@startuml
+title Process Diagram_US3001
+actor Candidate as actor #lightblue
+box ":System" #lightgrey
+participant ":CandidateApp" as CandidateApp #lightgreen
+participant ":FollowUpServer" as FollowUpServer #yellow
+
+activate actor
+actor -> CandidateApp : Requests to be notified in his application \nwhen the state of one of his applications \nchanges its state.
+activate CandidateApp
+CandidateApp -> FollowUpServer : Tries to establish a connection \nto the server
+activate FollowUpServer
+FollowUpServer --> CandidateApp : Accepts the connection
+CandidateApp -> FollowUpServer : Sends a message according to protocol \nwith the email of the candidate and the \ncode for notifying the application state change
+FollowUpServer --> CandidateApp : Sends the list of notifications
+deactivate FollowUpServer
+CandidateApp --> actor : Shows the list of notifications
+deactivate CandidateApp
+deactivate actor
+end box
+@enduml

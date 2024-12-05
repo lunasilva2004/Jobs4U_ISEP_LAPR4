@@ -1,0 +1,28 @@
+@startuml
+title Alternative_Solution_Diagram_US3000_ListApplicationsEmpty
+
+actor Candidate as actor #lightblue
+participant ":ListApplicationsForCandidateUI" as ui <<presentation>>
+participant ":ListJobApplicationController" as controller <<application>>
+participant ":ListJobApplicationService" as service <<service>>
+participant ":JobApplicationRepository" as repo <<repository>>
+
+activate actor
+actor -> ui : Requests to list all his applications \nand their state (including the number \nof applicants)
+activate ui
+ui -> controller: listJobApplicationsForCandidate()
+activate controller
+controller -> service: listJobApplicationsForCandidate(email)
+activate service
+service -> repo: findByCandidateEmail(email.toString())
+activate repo
+repo --> service: List<JobApplication>
+deactivate repo
+service --> controller: empty list
+deactivate service
+controller --> ui: empty list
+deactivate controller
+ui --> actor: Displays error message
+deactivate ui
+
+@enduml

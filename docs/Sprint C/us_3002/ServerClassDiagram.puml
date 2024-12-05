@@ -1,0 +1,193 @@
+@startuml
+
+title <size:30>Class Diagram - Server - 3002</size>
+
+hide circle
+skinparam packageStyle rect
+
+skinparam class {
+    BackgroundColor LightBlue
+    ArrowColor Black
+    BorderColor Black
+    FontColor Black
+    FontSize 14
+}
+skinparam relationship {
+    ArrowColor Black
+    ArrowFontColor Black
+    ArrowFontSize 14
+}
+
+
+package FollowUpServer <<Rectangle>>{
+
+class RcompServer {
+    -PORT: int
+    +main(args: String[]): void
+    +init(): void
+    +stop(thread: Thread): void
+}
+
+class SimpleHandler {
+    -authz: AuthorizationService
+    -candidateRepository: CandidateRepository
+    -customerRepository: CustomerRepository
+    +SimpleHandler(socket: Socket)
+    +handle(): void
+    +authenticate(message: byte[]): boolean
+    +sendACK(): void
+    +sendERR(): void
+    +sendSHOW_JOB_OPENINGS(list: List<String>): void
+}
+
+class Handler {
+    -serverSocket: Socket
+    -sIn: ObjectInputStream
+    -sOut: ObjectOutputStream
+    +Handler(socket: Socket)
+    +handle(): void
+    +run(): void
+}
+
+class Server {
+    -serverSocket: ServerSocket
+    -executing: boolean
+    +Server(port: int)
+    +execute(): void
+    +stop(): void
+    +run(): void
+}
+
+
+}
+
+package CustomerAppSide <<Rectangle>>{
+
+class MainMenu {
+    -authz: AuthorizationService
+    +show(): boolean
+    +doShow(): boolean
+    -buildMainMenu(): Menu
+}
+
+class CustomerApp {
+    -theController: ComunicationController
+    +main(args: String[]): void
+}
+
+class ServerAction {
+    +execute(): boolean
+}
+
+class ServerUI <<presentation>>{
+    -comunicationController: ComunicationController
+    +doShow(): boolean
+    +headline(): String
+}
+
+}
+
+package DataBase <<Rectangle>>{
+
+class JobOpeningRepository <<repository>>{}
+class CandidateRepository <<repository>>{}
+class CustomerRepository <<repository>>{}
+
+
+}
+
+package Core <<Rectangle>>{
+
+class ComunicationController <<application>>{
+    -service: CommunicationService
+    +initializeComunication(socket: Socket): void
+    +testConnection(): int
+    +login(userEmail: String, password: String): boolean
+    +disconnect(): int
+    +listAllJobOpenings(): List<String>
+}
+
+class MessageCode {
+    -code: int
+    +getCode(): int
+    +toString(): String
+}
+class Translator {
+    +encode(version: int, code: MessageCode, data1: byte[], data2: byte[]): byte[]
+    +decodeVersion(encodedMessage: byte[]): int
+    +decodeCode(encodedMessage: byte[]): int
+    +decodeData1Len(encodedMessage: byte[]): int
+    +decodeData1(encodedMessage: byte[]): byte[]
+    +decodeData2Len(encodedMessage: byte[]): int
+    +decodeData2(encodedMessage: byte[]): byte[]
+    +serializeListJobOpenings(list: List<String>): byte[]
+    +deserializeListJobOpenings(bytes: byte[]): List<String>
+}
+
+class Messenger {
+    -socket: Socket
+    -out: ObjectOutputStream
+    -in: ObjectInputStream
+    +Messenger(socket: Socket)
+    +sendMessage(message: byte[]): void
+    +receiveMessage(): byte[]
+}
+
+class ListJobOpeningController <<application>>{
+    -jobOpeningService: ListJobOpeningService
+    -authz: AuthorizationService
+    +listJobOpeningsForCustomer(): List<String>
+}
+
+class CommunicationService <<service>>{
+    -serverMessenger: Messenger
+    +getInstance(): CommunicationService
+    +initializeComunication(socket: Socket): void
+    +testConnection(): int
+    +login(userEmail: String, password: String): boolean
+    +disconnect(): int
+    +listAllJobOpeningsForSpecificCustomer(): List<String}
+}
+
+
+class ListJobOpeningService <<service>>{
+    -jobOpeningRepository: JobOpeningRepository
+    +listJobOpeningsForCustomer(email: Email): List<String>
+}
+}
+
+
+
+MainMenu --> ServerAction
+
+CustomerApp --> ComunicationController
+
+ServerAction --> ServerUI
+
+ServerUI --> ComunicationController
+
+ComunicationController --> CommunicationService
+ComunicationController --> MessageCode
+
+Translator --> MessageCode
+
+Messenger --> Socket
+
+ListJobOpeningController --> ListJobOpeningService
+
+CommunicationService --> Messenger
+
+ListJobOpeningService --> JobOpeningRepository
+
+RcompServer --> Server
+
+SimpleHandler --> CandidateRepository
+SimpleHandler --> CustomerRepository
+SimpleHandler --> Handler
+SimpleHandler --> ListJobOpeningController
+
+Handler --> Socket
+
+Server --> ServerSocket
+
+@enduml
